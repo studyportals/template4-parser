@@ -5,7 +5,7 @@
   "main": "template4.js",
   "scripts": {
     "build": "jison template4.jison -o src/template4.js",
-    "test": "node src/template4.js test/Test.tp4"
+    "test": "node src/template4.js test/New.tp4"
   },
   "author": "Thijs Putman <thijs@studyportals.com>",
   "license": "ISC",

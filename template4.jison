@@ -2,11 +2,12 @@
 %lex
 
 %x tp4
+%x tp4str
 
 %%
-"[{"                    this.begin("tp4");
-<tp4>"replace"|"var"    return 'TP4_REPLACE'
-<tp4>"condition"|"if"   return 'TP4_IF'
+"[{"|"<!--"\s*"[{"      this.begin("tp4"); return "TP4_OPEN"
+<tp4>"var"|"replace"    return 'TP4_VAR'
+<tp4>"if"|"condition"   return 'TP4_IF'
 <tp4>"section"          return 'TP4_SECTION'
 <tp4>"loop"|"repeater"  return 'TP4_LOOP'
 <tp4>"include"          return 'TP4_INCLUDE'
@@ -17,42 +18,121 @@
 <tp4>"template"         return 'TP4_TEMPLATE'
 <tp4>"component"        return 'TP4_COMPONENT'
 <tp4>"as"               return 'TP4_AS'
-<tp4>[^\s{}[]]+         return 'TP4_WORD'
-<tp4>[\s]+              /* ignore */
-<tp4>"}]"               this.popState();
+<tp4>"raw"              return 'TP4_RAW'
+<tp4>"local"            return 'TP4_LOCAL'
+<tp4>["]                this.begin("tp4str"); return "TP4_QUOTE"
+<tp4str>[^"\n]+         return "TP4_STRING"
+<tp4str>[\n]+           return "TP4_LN_IN_STRING"
+<tp4str>["]             this.popState(); return "TP4_QUOTE"
+<tp4>[a-zA-Z0-9_]+      return 'TP4_VALUE'
+<tp4>[\s]+              /* ignore whitespace inside TP4-syntax */
+<tp4>"}]"|"}]"\s*"-->"  this.popState(); return "TP4_CLOSE"
+<tp4>"[{"               return 'TP4_OPEN' /* disallow dangling TP4_OPEN */
+"}]"                    return 'TP4_CLOSE' /* disallow dangling TP4_CLOSE */
 
-"<!--"                  /* ignore */
-"-->"                   /* ignore */
+[{}[]]+                 return 'CONTROL_CHARS'
+[^{}[]]+                return 'HTML' /* these two capture "everything else" */
 
-[^{}[]]+                return 'STRING'
+<<EOF>>                 return 'EOF'
 
 /lex
 
-%start input
+%start file
 
 %% /* language grammar */
 
-input:    /* empty */
-        | input part
+file: template EOF {console.log(JSON.stringify($1))}
 ;
 
-part:   STRING
-      | TP4_WORD
-      | TP4_REPLACE TP4_WORD {console.log("replace:", $2)}
-      | TP4_IF TP4_WORD tp4_operator input TP4_IF TP4_WORD TP4_END {console.log("if:", $2)}
-      | TP4_SECTION TP4_WORD input TP4_SECTION TP4_WORD TP4_END {console.log("section:", $2)}
-      | TP4_LOOP TP4_WORD input TP4_LOOP TP4_WORD TP4_END {console.log("loop:", $2)}
-      | TP4_INCLUDE tp4_include_type TP4_WORD tp4_include_name {console.log("include:", $3)}
+template:   /* empty */
+          | template chunk
+          {{
+            if($1 === undefined){
+              $$ = [$2]
+            }
+            else{
+              if($2.t == 'html' && $$.slice(-1)[0].t == 'html'){
+                $$.push({'t': 'html', c: $$.pop().c.concat($2.c)}) /* this is terrible :/ */
+              }
+              else{
+                $$.push($2)
+              }
+            }
+          }}
 ;
 
-tp4_operator:   TP4_IN
-              | TP4_NOT TP4_IN
-              | TP4_IS
+chunk:  HTML
+          {{
+            $$ = {t: 'html', c: $1}
+          }}
+      | CONTROL_CHARS
+          {{
+            $$ = {t: 'html', c: $1}
+          }}
+      | TP4_OPEN TP4_VAR TP4_VALUE tp4_raw TP4_CLOSE /* [{var ... */
+          {{
+            $$ = {t: 'var', n: $3}
+          }}
+      | TP4_OPEN TP4_IF TP4_VALUE tp4_operator tp4_argument tp4_local TP4_CLOSE
+          template
+        TP4_OPEN TP4_IF TP4_VALUE TP4_END TP4_CLOSE /* [{if ... is|!is|not ... */
+          {{
+            $$ = {t: 'if', n: $3, c: $8}
+            if($3 != $11){
+              throw new Error('[{if ' + $3 + ' closed with "' + $11 + '" on line ' + yylineno);
+            }
+          }}
+      | TP4_OPEN TP4_IF TP4_VALUE tp4_set_operator tp4_set tp4_local TP4_CLOSE
+          template
+        TP4_OPEN TP4_IF TP4_VALUE TP4_END TP4_CLOSE /* [{if ... in|!in ... */
+          {{
+            $$ = {t: 'if', n: $3, c: $8}
+          }}
+      | TP4_OPEN TP4_SECTION TP4_VALUE TP4_CLOSE
+          template
+        TP4_OPEN TP4_SECTION TP4_VALUE TP4_END TP4_CLOSE /* [{section ... */
+          {{
+            $$ = {t: 'section', n: $3, c: $5}
+          }}
+      | TP4_OPEN TP4_LOOP TP4_VALUE TP4_CLOSE
+          template
+        TP4_OPEN TP4_LOOP TP4_VALUE TP4_END TP4_CLOSE /* [{loop ... */
+          {{
+            $$ = {t: 'loop', n: $3, c: $5}
+          }}
+      | TP4_OPEN TP4_INCLUDE tp4_include_type tp4_string tp4_include_name TP4_CLOSE /* [{include ... */
+          {{
+            $$ = {t: 'include', n: $4}
+          }}
+;
+
+tp4_string:   TP4_QUOTE TP4_QUOTE
+            | TP4_QUOTE TP4_STRING TP4_QUOTE
+;
+
+tp4_argument:   TP4_VALUE
+              | tp4_string
+;
+
+tp4_operator:   TP4_IS
               | TP4_NOT
+              | TP4_NOT TP4_IS
 ;
 
-tp4_set:    TP4_WORD
-          | tp4_set TP4_WORD
+tp4_set_operator:   TP4_IN
+                  | TP4_NOT TP4_IN
+;
+
+tp4_set:  tp4_argument
+        | tp4_set tp4_argument
+;
+
+tp4_raw:  /* empty */
+        | TP4_RAW
+;
+
+tp4_local:  /* empty */
+          | TP4_LOCAL
 ;
 
 tp4_include_type:   /* empty */
@@ -61,5 +141,5 @@ tp4_include_type:   /* empty */
 ;
 
 tp4_include_name:   /* empty */
-                  | TP4_AS TP4_WORD
+                  | TP4_AS TP4_VALUE
 ;
