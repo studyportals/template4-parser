@@ -38,6 +38,9 @@ There are some major caveats still:
   Template4 open- and close-tags have the same identifier; this cannot be done
   in pure BNF). Might consider to simply remove this criterion (as it is
   absolutely _not_ necessary to properly parse the template).
+- In some places, EBNF should be used instead of BNF. The end-result is the same
+  (EBNF is translated into BNF by jison), but it helps with readability &ndash;
+  mainly in places where an optional token is present.
 - The original PHP-implementation processed includes as part of the
   parsing-stage. That doesn't seem like a good idea in this approach (pushes too
   much complexity into the `jison`file), which would require an intermediate
@@ -48,3 +51,4 @@ There are some major caveats still:
 1. https://github.com/zaach/jison
 2. http://zaa.ch/jison/docs/
 3. http://dinosaur.compilertools.net/bison/index.html
+4. https://gist.github.com/zaach/1659274
