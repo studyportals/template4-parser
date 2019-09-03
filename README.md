@@ -11,8 +11,8 @@ npm run test
 
 The `npm run test` command will output a rough &ndash; but structurally sound
 &ndash; JSON-representation of the Template4 AST as produced by the
-jison-generated parser. Currently, only types (`t`), identifiers (`n`) and node
-contents/children (`c`) are present in the AST.
+jison-generated parser. Currently, only types (`t`), names (`n`), node children
+(`c`) and node data (`d`) are present in the AST.
 
 Two test Template4-files are included:
 

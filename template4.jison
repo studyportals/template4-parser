@@ -52,7 +52,7 @@ template:   /* empty */
             }
             else{
               if($2.t == 'html' && $$.slice(-1)[0].t == 'html'){
-                $$.push({'t': 'html', c: $$.pop().c.concat($2.c)}) /* this is terrible :/ */
+                $$.push({'t': 'html', d: $$.pop().d.concat($2.d)}) /* this is terrible :/ */
               }
               else{
                 $$.push($2)
@@ -63,11 +63,11 @@ template:   /* empty */
 
 chunk:  HTML
           {{
-            $$ = {t: 'html', c: $1}
+            $$ = {t: 'html', d: $1}
           }}
       | CONTROL_CHARS
           {{
-            $$ = {t: 'html', c: $1}
+            $$ = {t: 'html', d: $1}
           }}
       | TP4_OPEN TP4_VAR TP4_VALUE tp4_raw TP4_CLOSE /* [{var ... */
           {{
@@ -102,12 +102,18 @@ chunk:  HTML
           }}
       | TP4_OPEN TP4_INCLUDE tp4_include_type tp4_string tp4_include_name TP4_CLOSE /* [{include ... */
           {{
-            $$ = {t: 'include', n: $4}
+            $$ = {t: 'include', d: $4, n: $5}
           }}
 ;
 
 tp4_string:   TP4_QUOTE TP4_QUOTE
+                {{
+                  $$ = undefined
+                }}
             | TP4_QUOTE TP4_STRING TP4_QUOTE
+                {{
+                  $$ = $2
+                }}
 ;
 
 tp4_argument:   TP4_VALUE
@@ -142,4 +148,7 @@ tp4_include_type:   /* empty */
 
 tp4_include_name:   /* empty */
                   | TP4_AS TP4_VALUE
+                      {{
+                        $$ = $2
+                      }}
 ;
