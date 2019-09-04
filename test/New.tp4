@@ -9,7 +9,8 @@
 	Support for strings inside condition statements (including empty strings; "")
 	Support for "local" at the end of set-conditions
 	Support for !is (instead of "not"; for parity with "!in")
-
+	Closing tag name/identifier is now optional (when provided open-tag and closin-
+	tag names do still need to match) - it served no purpose in the grammar
 -->
 
 <hr>
@@ -24,7 +25,7 @@
 
 [{condition in_set in 1 2 3}]
 	<p>In 1, 2 or 3!</p>
-[{condition in_set end}]
+[{condition end}]
 
 [{condition in_set !in 1 2 3}]
 	<p><strong>NOT</strong> in 1, 2 or 3!</p>
@@ -32,7 +33,7 @@
 
 [{if quoted_if is "Hello World!"}]
 	<p>Quoted if-statement</p>
-[{if quoted_if end}]
+[{if end}]
 
 [{if quoted_set in "Hello World!" "Woei" ""}]
 	<p>In "Hello World!", "Woei" or ""</p>
@@ -89,7 +90,7 @@ it from polluting the template, which would cause problems with further tests.</
 
 	</ol>
 
-[{section ListWrapper end}]
+[{section end}]
 
 <h1>Nested Sections &amp; Includes</h1>
 
@@ -102,6 +103,7 @@ it from polluting the template, which would cause problems with further tests.</
 		[{section Iets}]
 
 			<!--[{include "IncludeStatic.html"}]-->
+			<!--[{include "" as InvalidInclude}]-->
 
 		[{section Iets end}]
 

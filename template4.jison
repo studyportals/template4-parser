@@ -41,6 +41,8 @@
 
 %% /* language grammar */
 
+%ebnf
+
 file: template EOF {console.log(JSON.stringify($1))}
 ;
 
@@ -69,38 +71,38 @@ chunk:  HTML
           {{
             $$ = {t: 'html', d: $1}
           }}
-      | TP4_OPEN TP4_VAR TP4_VALUE tp4_raw TP4_CLOSE /* [{var ... */
+      | TP4_OPEN TP4_VAR TP4_VALUE TP4_RAW? TP4_CLOSE /* [{var ... */
           {{
             $$ = {t: 'var', n: $3}
           }}
-      | TP4_OPEN TP4_IF TP4_VALUE tp4_operator tp4_argument tp4_local TP4_CLOSE
+      | TP4_OPEN TP4_IF TP4_VALUE tp4_op tp4_argument TP4_LOCAL? TP4_CLOSE
           template
-        TP4_OPEN TP4_IF TP4_VALUE TP4_END TP4_CLOSE /* [{if ... is|!is|not ... */
+        TP4_OPEN TP4_IF TP4_VALUE? TP4_END TP4_CLOSE /* [{if ... is|!is|not ... */
           {{
             $$ = {t: 'if', n: $3, c: $8}
-            if($3 != $11){
+            if($11 !== undefined && $3 != $11){
               throw new Error('[{if ' + $3 + ' closed with "' + $11 + '" on line ' + yylineno);
             }
           }}
-      | TP4_OPEN TP4_IF TP4_VALUE tp4_set_operator tp4_set tp4_local TP4_CLOSE
+      | TP4_OPEN TP4_IF TP4_VALUE tp4_setop tp4_argument+ TP4_LOCAL? TP4_CLOSE
           template
-        TP4_OPEN TP4_IF TP4_VALUE TP4_END TP4_CLOSE /* [{if ... in|!in ... */
+        TP4_OPEN TP4_IF TP4_VALUE? TP4_END TP4_CLOSE /* [{if ... in|!in ... */
           {{
             $$ = {t: 'if', n: $3, c: $8}
           }}
       | TP4_OPEN TP4_SECTION TP4_VALUE TP4_CLOSE
           template
-        TP4_OPEN TP4_SECTION TP4_VALUE TP4_END TP4_CLOSE /* [{section ... */
+        TP4_OPEN TP4_SECTION TP4_VALUE? TP4_END TP4_CLOSE /* [{section ... */
           {{
             $$ = {t: 'section', n: $3, c: $5}
           }}
       | TP4_OPEN TP4_LOOP TP4_VALUE TP4_CLOSE
           template
-        TP4_OPEN TP4_LOOP TP4_VALUE TP4_END TP4_CLOSE /* [{loop ... */
+        TP4_OPEN TP4_LOOP TP4_VALUE? TP4_END TP4_CLOSE /* [{loop ... */
           {{
             $$ = {t: 'loop', n: $3, c: $5}
           }}
-      | TP4_OPEN TP4_INCLUDE tp4_include_type tp4_string tp4_include_name TP4_CLOSE /* [{include ... */
+      | TP4_OPEN TP4_INCLUDE (TP4_TEMPLATE|TP4_COMPONENT|) tp4_string tp4_include_name TP4_CLOSE /* [{include ... */
           {{
             $$ = {t: 'include', d: $4, n: $5}
           }}
@@ -120,30 +122,13 @@ tp4_argument:   TP4_VALUE
               | tp4_string
 ;
 
-tp4_operator:   TP4_IS
-              | TP4_NOT
-              | TP4_NOT TP4_IS
+tp4_op:   TP4_IS
+        | TP4_NOT
+        | TP4_NOT TP4_IS
 ;
 
-tp4_set_operator:   TP4_IN
-                  | TP4_NOT TP4_IN
-;
-
-tp4_set:  tp4_argument
-        | tp4_set tp4_argument
-;
-
-tp4_raw:  /* empty */
-        | TP4_RAW
-;
-
-tp4_local:  /* empty */
-          | TP4_LOCAL
-;
-
-tp4_include_type:   /* empty */
-                  | TP4_TEMPLATE
-                  | TP4_COMPONENT
+tp4_setop:  TP4_IN
+          | TP4_NOT TP4_IN
 ;
 
 tp4_include_name:   /* empty */
