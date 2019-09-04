@@ -2,7 +2,7 @@
 
 	Modified TP4 Test
 
-	Omits the not-supported translation-markers
+	Omits the not-supported translation-markers (%txtSomething%)
 	Adds additional tests to ensure literal []{} are properly processed
 		(the above comment is a test in itself already ;)
 	Adds a test for spaces in TP4 includes.
@@ -15,21 +15,21 @@
 
 <hr>
 
-<h1>[{replace header1}]</h1>
+<h1>[{var header1}]</h1>
 
 <h2>Replace &amp; Replace Raw</h2>
 <p>[{replace header2}].</p>
-<p>[{replace header2 raw}].</p>
+<p>[{var header2 raw}].</p>
 
 <h1>Condition Sets</h1>
 
-[{condition in_set in 1 2 3}]
+[{if in_set in 1 2 3}]
 	<p>In 1, 2 or 3!</p>
-[{condition end}]
+[{if end}]
 
 [{condition in_set !in 1 2 3}]
 	<p><strong>NOT</strong> in 1, 2 or 3!</p>
-[{condition in_set end}]
+[{condition end}]
 
 [{if quoted_if is "Hello World!"}]
 	<p>Quoted if-statement</p>
@@ -43,11 +43,9 @@
 	<p>Either foo or bar: <strong>[{var in_set2}]</strong></p>
 [{if in_set2 end}]
 
-<h1>Localized Template</h1>
-
 <p>
 	The following line should end with <strong>[{replace random_string}]</strong>.
-	<br>
+	<br/>
 	Here are some literal [, ], { and } characters; [Hello] {World}!
 </p>
 
@@ -60,14 +58,14 @@
 	<br>
 	[{condition templated_test__test3_1 is true}]
 		<em>is true!</em>
-	[{condition templated_test__test3_1 end}]
+	[{condition end}]
 </p>
 
 <h1>Include Component</h1>
 
 [{condition test_me is false}]
 	[{include component "TestComponent.tp4" as WoeiComponent}]
-[{condition test_me end}]
+[{condition end}]
 
 <h1>Recursive Repeater</h1>
 
@@ -81,12 +79,12 @@ it from polluting the template, which would cause problems with further tests.</
 
 		<!--[{loop MyList}]-->
 			<li>
-				Level [{replace level}], value: [{replace value}]
+				Level [{var level}], value: [{var value}]
 				<ol>
 					<!--	[{section SubList}][{section SubList end}]    	-->
 				</ol>
 			</li>
-		<!--[{loop MyList end}]-->
+		<!--[{loop end}]-->
 
 	</ol>
 
@@ -113,11 +111,11 @@ it from polluting the template, which would cause problems with further tests.</
 
 		[{section Iets}]
 
-			[{condition test_me is false}]
-				[{include template "Templates\IncludeTemplate.tp4" as WoeiTemplate}]
-			[{condition test_me end}]
+			[{if test_me is false}]
+				[{include template "Templates\IncludeTemplate.tp4" as "WoeiTemplate"}]
+			[{if end}]
 
-			<p [{condition lipsum_bold is true local}]style="font-weight:bold;"[{condition lipsum_bold end}]>
+			<p [{if lipsum_bold is true local}]style="font-weight:bold;"[{if lipsum_bold end}]>
 				Lorem ipsum inside a section...
 			</p>
 
@@ -129,11 +127,11 @@ it from polluting the template, which would cause problems with further tests.</
 
 [{include template "Templates\Include with Spaces.tp4"}]
 
-[{condition lipsum_bold !is ""}]
-	<p [{condition lipsum_bold is true}]style="font-weight:bold;"[{condition lipsum_bold end}]>
+[{if lipsum_bold !is ""}]
+	<p [{if lipsum_bold is true}]style="font-weight:bold;"[{if end}]>
 		Double-nested: Lorem ipsum in global scope (should be bold)...
 	</p>
-[{condition lipsum_bold end}]
+[{if end}]
 
 <h1>Repeater &amp; Scope</h1>
 
@@ -141,9 +139,9 @@ it from polluting the template, which would cause problems with further tests.</
 
 	<!-- [{repeater BulletList}] -->
 
-		<li>[{replace random_string}] - [{replace bullet_item raw}]</li>
+		<li>[{replace random_string}] - [{var bullet_item raw}]</li>
 
-	<!-- [{repeater BulletList end }] -->
+	<!-- [{repeater end }] -->
 
 </ul>
 
