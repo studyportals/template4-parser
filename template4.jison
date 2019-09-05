@@ -1,6 +1,8 @@
 /* lexical grammar */
 %lex
 
+%option caseless
+
 %x tp4
 %x tp4str
 
@@ -27,8 +29,8 @@
 <tp4>[a-zA-Z0-9_]+      return 'TP4_VALUE'
 <tp4>[\s]+              /* ignore whitespace inside TP4-syntax */
 <tp4>"}]"|"}]"\s*"-->"  this.popState(); return "TP4_CLOSE"
-<tp4>"[{"               return 'TP4_OPEN' /* disallow dangling TP4_OPEN */
-"}]"                    return 'TP4_CLOSE' /* disallow dangling TP4_CLOSE */
+<tp4>"[{"               return 'TP4_OPEN'   /* disallow dangling TP4_OPEN */
+"}]"                    return 'TP4_CLOSE'  /* disallow dangling TP4_CLOSE */
 
 [{}[]]+                 return 'CONTROL_CHARS'
 [^{}[]]+                return 'HTML' /* these two capture "everything else" */
@@ -47,93 +49,97 @@ file: template EOF {console.log(JSON.stringify($1))}
 ;
 
 template:   /* empty */
-          | template chunk
-          {{
-            if($1 === undefined){
-              $$ = [$2]
-            }
-            else{
-              if($2.t == 'html' && $$.slice(-1)[0].t == 'html'){
-                $$.push({'t': 'html', d: $$.pop().d.concat($2.d)}) /* this is terrible :/ */
-              }
-              else{
-                $$.push($2)
-              }
-            }
-          }}
+          | template part
+              {{
+                if($1 === undefined){
+                  $$ = [$2]
+                }
+                else{
+                  if($2.t == 'html' && $$.slice(-1)[0].t == 'html'){
+                    $$.push({'t': 'html', d: $$.pop().d.concat($2.d)})
+                  }
+                  else{
+                    $$.push($2)
+                  }
+                }
+              }}
 ;
 
-chunk:  HTML
+part:   HTML
           {{
-            $$ = {t: 'html', d: $1}
+            $$ = { t: 'html', d: $1 }
           }}
       | CONTROL_CHARS
           {{
-            $$ = {t: 'html', d: $1}
+            $$ = { t: 'html', d: $1 }
           }}
-      | TP4_OPEN TP4_VAR TP4_VALUE TP4_RAW? TP4_CLOSE /* [{var ... */
+      | TP4_OPEN TP4_VAR TP4_VALUE TP4_RAW? TP4_CLOSE /* [{var ... }] */
           {{
-            $$ = {t: 'var', n: $3}
+            $$ = { t: 'var', n: $3, a: { raw: $4 } }
           }}
-      | TP4_OPEN TP4_IF TP4_VALUE tp4_op tp4_argument TP4_LOCAL? TP4_CLOSE
+      | TP4_OPEN TP4_IF TP4_VALUE tp4_op (TP4_VALUE|tp4_string) TP4_LOCAL? TP4_CLOSE
           template
-        TP4_OPEN TP4_IF TP4_VALUE? TP4_END TP4_CLOSE /* [{if ... is|!is|not ... */
+        TP4_OPEN TP4_IF TP4_VALUE? TP4_END TP4_CLOSE /* [{if ... is|!is ... }] ... [{if end}] */
           {{
-            $$ = {t: 'if', n: $3, c: $8}
+            $$ = { t: 'if', n: $3, d: $5, o: $4, c: $8, a: { local: $6 } }
             if($11 !== undefined && $3 != $11){
-              throw new Error('[{if ' + $3 + ' closed with "' + $11 + '" on line ' + yylineno);
+              throw new Error(yylineno);
             }
           }}
-      | TP4_OPEN TP4_IF TP4_VALUE tp4_setop tp4_argument+ TP4_LOCAL? TP4_CLOSE
+      | TP4_OPEN TP4_IF TP4_VALUE tp4_setop (TP4_VALUE|tp4_string)+ TP4_LOCAL? TP4_CLOSE
           template
-        TP4_OPEN TP4_IF TP4_VALUE? TP4_END TP4_CLOSE /* [{if ... in|!in ... */
+        TP4_OPEN TP4_IF TP4_VALUE? TP4_END TP4_CLOSE /* [{if ... in|!in ... }] ... [{if end}] */
           {{
-            $$ = {t: 'if', n: $3, c: $8}
+            $$ = { t: 'if', n: $3, d: $5, o: $4, c: $8, a: { local: $6 } }
+            if($11 !== undefined && $3 != $11){
+              throw new Error(yylineno);
+            }
           }}
       | TP4_OPEN TP4_SECTION TP4_VALUE TP4_CLOSE
           template
-        TP4_OPEN TP4_SECTION TP4_VALUE? TP4_END TP4_CLOSE /* [{section ... */
+        TP4_OPEN TP4_SECTION TP4_VALUE? TP4_END TP4_CLOSE /* [{section ... }] ... [{section end}] */
           {{
-            $$ = {t: 'section', n: $3, c: $5}
+            $$ = { t: 'section', n: $3, c: $5 }
+            if($8 !== undefined && $3 != $8){
+              throw new Error(yylineno);
+            }
           }}
       | TP4_OPEN TP4_LOOP TP4_VALUE TP4_CLOSE
           template
-        TP4_OPEN TP4_LOOP TP4_VALUE? TP4_END TP4_CLOSE /* [{loop ... */
+        TP4_OPEN TP4_LOOP TP4_VALUE? TP4_END TP4_CLOSE /* [{loop ... }] ... [{loop end}]*/
           {{
-            $$ = {t: 'loop', n: $3, c: $5}
+            $$ = { t: 'loop', n: $3, c: $5 }
+            if($8 !== undefined && $3 != $8){
+              throw new Error(yylineno);
+            }
           }}
-      | TP4_OPEN TP4_INCLUDE (TP4_TEMPLATE|TP4_COMPONENT|) tp4_string tp4_include_name TP4_CLOSE /* [{include ... */
+      | TP4_OPEN TP4_INCLUDE tp4_string TP4_CLOSE /* [{include ... }] */
           {{
-            $$ = {t: 'include', d: $4, n: $5}
+            $$ = { t: 'include', d: $3 }
+          }}
+      | TP4_OPEN TP4_INCLUDE TP4_TEMPLATE tp4_string tp4_as_name TP4_CLOSE /* [{include template ... }] */
+          {{
+            $$ = { t: 'template', d: $4, n: $5 }
+          }}
+      | TP4_OPEN TP4_INCLUDE TP4_COMPONENT tp4_string tp4_as_name TP4_CLOSE /* [{include component ... }] */
+          {{
+            $$ = { t: 'component', d: $4, n: $5 }
           }}
 ;
 
-tp4_string:   TP4_QUOTE TP4_QUOTE
-                {{
-                  $$ = undefined
-                }}
-            | TP4_QUOTE TP4_STRING TP4_QUOTE
-                {{
-                  $$ = $2
-                }}
+tp4_string:   TP4_QUOTE TP4_QUOTE             { $$ = undefined }
+            | TP4_QUOTE TP4_STRING TP4_QUOTE  { $$ = $2 }
 ;
 
-tp4_argument:   TP4_VALUE
-              | tp4_string
+tp4_op:   TP4_IS            { $$ = 'is' }
+        | TP4_NOT           { $$ = 'not' }
+        | TP4_NOT TP4_IS    { $$ = 'not' }
 ;
 
-tp4_op:   TP4_IS
-        | TP4_NOT
-        | TP4_NOT TP4_IS
+tp4_setop:  TP4_IN          { $$ = 'is' }
+          | TP4_NOT TP4_IN  { $$ = 'not' }
 ;
 
-tp4_setop:  TP4_IN
-          | TP4_NOT TP4_IN
-;
-
-tp4_include_name:   /* empty */
-                  | TP4_AS TP4_VALUE
-                      {{
-                        $$ = $2
-                      }}
+tp4_as_name:  /* empty */
+            | TP4_AS TP4_VALUE  { $$ = $2 }
 ;

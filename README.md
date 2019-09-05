@@ -11,8 +11,14 @@ npm run test
 
 The `npm run test` command will output a rough &ndash; but structurally sound
 &ndash; JSON-representation of the Template4 AST as produced by the
-jison-generated parser. Currently, only types (`t`), names (`n`), node children
-(`c`) and node data (`d`) are present in the AST.
+jison-generated parser. The following elements are present:
+
+- type (`t`)
+- name (`n`)
+- operator (`o`)
+- attributes (`a`)
+- node children (`c`)
+- node data (`d`)
 
 Two test Template4-files are included:
 
@@ -24,27 +30,23 @@ Two test Template4-files are included:
 
 There are some major caveats still:
 
-- Readability of the `jison`-file is poor at best... 😇
+- Readability of the `jison`-file could be improved...
 - I haven't been able to find a good way of capturing "everything but" the
   TP4-syntax. The current approach &ndash; with two patterns &ndash; one
   capturing everything but `{}[]` (the Template4 control-characters) and one
   capturing `{}[]` works just fine from a lexer/parser perspective, but it
   requires some terrible array manipulation to prevent spamming the AST with
   unnecessary HTML-nodes.
-- The AST construction-logic is part of the parser (not good for readability).
-  Probably best to pull this out into a separate AST class (as seen in most
-  online examples using `yy.ast`).
 - Some additional validation logic is still required (mainly to ensure matching
   Template4 open- and close-tags have the same identifier; this cannot be done
-  in pure BNF). Might consider to simply remove this criterion (as it is
-  absolutely _not_ necessary to properly parse the template).
-- In some places, EBNF should be used instead of BNF. The end-result is the same
-  (EBNF is translated into BNF by jison), but it helps with readability &ndash;
-  mainly in places where an optional token is present.
+  in pure BNF).
 - The original PHP-implementation processed includes as part of the
   parsing-stage. That doesn't seem like a good idea in this approach (pushes too
   much complexity into the `jison`file), which would require an intermediate
   "include-resolving" step after constructing the AST.
+- The principle of "components" (present in the original implementation) hasn't
+  been ported yet. I might decide not to port this as (I think) it is not used
+  in any of our templates any more...
 
 ## References
 
