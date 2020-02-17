@@ -141,5 +141,5 @@ tp4_setop:  TP4_IN          { $$ = 'is' }
 ;
 
 tp4_as_name:  /* empty */
-            | TP4_AS TP4_VALUE  { $$ = $2 }
+            | TP4_AS (TP4_VALUE | tp4_string) { $$ = $2 }
 ;

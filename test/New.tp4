@@ -101,7 +101,6 @@ it from polluting the template, which would cause problems with further tests.</
 		[{section Iets}]
 
 			<!--[{include "IncludeStatic.html"}]-->
-			<!--[{include "" as InvalidInclude}]-->
 
 		[{section Iets end}]
 
