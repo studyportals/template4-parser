@@ -2,6 +2,7 @@
 %lex
 
 %option caseless
+%options easy_keyword_rules
 
 %x tp4
 %x tp4str
@@ -32,34 +33,33 @@
 <tp4>"[{"               return 'TP4_OPEN'   /* disallow dangling TP4_OPEN */
 "}]"                    return 'TP4_CLOSE'  /* disallow dangling TP4_CLOSE */
 
-[{}[]]+                 return 'CONTROL_CHARS'
-[^{}[]]+                return 'HTML' /* these two capture "everything else" */
+[{}\[\]]+               return 'CONTROL_CHARS'
+[^{}\[\]]+              return 'HTML' /* these two capture "everything else" */
 
 <<EOF>>                 return 'EOF'
 
 /lex
 
+%ebnf
 %start file
 
 %% /* language grammar */
 
-%ebnf
-
-file: template EOF {console.log(JSON.stringify($1))}
+file: template EOF {return $1;}
 ;
 
 template:   /* empty */
           | template part
               {{
-                if($1 === undefined){
-                  $$ = [$2]
+                if($template === undefined || typeof $$ != 'object'){
+                  $$ = [$part]
                 }
                 else{
-                  if($2.t == 'html' && $$.slice(-1)[0].t == 'html'){
-                    $$.push({'t': 'html', d: $$.pop().d.concat($2.d)})
+                  if($part.t == 'html' && $$.slice(-1)[0].t == 'html'){
+                    $$.push({'t': 'html', d: $$.pop().d.concat($part.d)})
                   }
                   else{
-                    $$.push($2)
+                    $$.push($part)
                   }
                 }
               }}
@@ -141,5 +141,5 @@ tp4_setop:  TP4_IN          { $$ = 'is' }
 ;
 
 tp4_as_name:  /* empty */
-            | TP4_AS TP4_VALUE  { $$ = $2 }
+            | TP4_AS (TP4_VALUE | tp4_string) { $$ = $2 }
 ;
