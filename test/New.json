@@ -3,14 +3,14 @@
     "t": "html",
     "d": "<!--\r\n\r\n\tModified TP4 Test\r\n\r\n\tOmits the not-supported translation-markers (%txtSomething%)\r\n\tAdds additional tests to ensure literal []{} are properly processed\r\n\t\t(the above comment is a test in itself already ;)\r\n\tAdds a test for spaces in TP4 includes.\r\n\tSupport for strings inside condition statements (including empty strings; \"\")\r\n\tSupport for \"local\" at the end of set-conditions\r\n\tSupport for !is (instead of \"not\"; for parity with \"!in\")\r\n\tClosing tag name/identifier is now optional (when provided open-tag and closin-\r\n\ttag names do still need to match) - it served no purpose in the grammar\r\n-->\r\n\r\n<hr>\r\n\r\n<h1>"
   },
-  { "t": "var", "n": "header1", "a": {} },
+  { "t": "var", "n": "header1", "a": { "raw": false } },
   {
     "t": "html",
     "d": "</h1>\r\n\r\n<h2>Replace &amp; Replace Raw</h2>\r\n<p>"
   },
-  { "t": "var", "n": "header2", "a": {} },
+  { "t": "var", "n": "header2", "a": { "raw": false } },
   { "t": "html", "d": ".</p>\r\n<p>" },
-  { "t": "var", "n": "header2", "a": { "raw": "raw" } },
+  { "t": "var", "n": "header2", "a": { "raw": true } },
   { "t": "html", "d": ".</p>\r\n\r\n<h1>Condition Sets</h1>\r\n\r\n" },
   {
     "t": "if",
@@ -18,7 +18,7 @@
     "d": ["1", "2", "3"],
     "o": "is",
     "c": [{ "t": "html", "d": "\r\n\t<p>In 1, 2 or 3!</p>\r\n" }],
-    "a": {}
+    "a": { "local": false }
   },
   { "t": "html", "d": "\r\n\r\n" },
   {
@@ -32,7 +32,7 @@
         "d": "\r\n\t<p><strong>NOT</strong> in 1, 2 or 3!</p>\r\n"
       }
     ],
-    "a": {}
+    "a": { "local": false }
   },
   { "t": "html", "d": "\r\n\r\n" },
   {
@@ -41,13 +41,13 @@
     "d": "Hello World!",
     "o": "is",
     "c": [{ "t": "html", "d": "\r\n\t<p>Quoted if-statement</p>\r\n" }],
-    "a": {}
+    "a": { "local": false }
   },
   { "t": "html", "d": "\r\n\r\n" },
   {
     "t": "if",
     "n": "quoted_set",
-    "d": ["Hello World!", "Woei", null],
+    "d": ["Hello World!", "Woei", ""],
     "o": "is",
     "c": [
       {
@@ -55,7 +55,7 @@
         "d": "\r\n\t<p>In \"Hello World!\", \"Woei\" or \"\"</p>\r\n"
       }
     ],
-    "a": {}
+    "a": { "local": false }
   },
   { "t": "html", "d": "\r\n\r\n" },
   {
@@ -65,25 +65,25 @@
     "o": "is",
     "c": [
       { "t": "html", "d": "\r\n\t<p>Either foo or bar: <strong>" },
-      { "t": "var", "n": "in_set2", "a": {} },
+      { "t": "var", "n": "in_set2", "a": { "raw": false } },
       { "t": "html", "d": "</strong></p>\r\n" }
     ],
-    "a": {}
+    "a": { "local": false }
   },
   {
     "t": "html",
     "d": "\r\n\r\n<p>\r\n\tThe following line should end with <strong>"
   },
-  { "t": "var", "n": "random_string", "a": {} },
+  { "t": "var", "n": "random_string", "a": { "raw": false } },
   {
     "t": "html",
     "d": "</strong>.\r\n\t<br/>\r\n\tHere are some literal [, ], { and } characters; [Hello] {World}!\r\n</p>\r\n\r\n<h1>TemplatedObject: "
   },
-  { "t": "var", "n": "templated_test", "a": {} },
+  { "t": "var", "n": "templated_test", "a": { "raw": false } },
   { "t": "html", "d": "</h1>\r\n\r\n<p>\r\n\t" },
-  { "t": "var", "n": "templated_test__test1", "a": {} },
+  { "t": "var", "n": "templated_test__test1", "a": { "raw": false } },
   { "t": "html", "d": "\r\n\t<br>\r\n\t" },
-  { "t": "var", "n": "templated_test__test2", "a": {} },
+  { "t": "var", "n": "templated_test__test2", "a": { "raw": false } },
   { "t": "html", "d": "\r\n\t<br>\r\n\t" },
   {
     "t": "if",
@@ -91,7 +91,7 @@
     "d": "true",
     "o": "is",
     "c": [{ "t": "html", "d": "\r\n\t\t<em>is true!</em>\r\n\t" }],
-    "a": {}
+    "a": { "local": false }
   },
   { "t": "html", "d": "\r\n</p>\r\n\r\n<h1>Include Component</h1>\r\n\r\n" },
   {
@@ -104,7 +104,7 @@
       { "t": "component", "d": "TestComponent.tp4", "n": "WoeiComponent" },
       { "t": "html", "d": "\r\n" }
     ],
-    "a": {}
+    "a": { "local": false }
   },
   {
     "t": "html",
@@ -120,9 +120,9 @@
         "n": "MyList",
         "c": [
           { "t": "html", "d": "-->\r\n\t\t\t<li>\r\n\t\t\t\tLevel " },
-          { "t": "var", "n": "level", "a": {} },
+          { "t": "var", "n": "level", "a": { "raw": false } },
           { "t": "html", "d": ", value: " },
-          { "t": "var", "n": "value", "a": {} },
+          { "t": "var", "n": "value", "a": { "raw": false } },
           { "t": "html", "d": "\r\n\t\t\t\t<ol>\r\n\t\t\t\t\t<!--\t" },
           { "t": "section", "n": "SubList" },
           {
@@ -185,7 +185,7 @@
                   },
                   { "t": "html", "d": "\r\n\t\t\t" }
                 ],
-                "a": {}
+                "a": { "local": false }
               },
               { "t": "html", "d": "\r\n\r\n\t\t\t<p " },
               {
@@ -194,7 +194,7 @@
                 "d": "true",
                 "o": "is",
                 "c": [{ "t": "html", "d": "style=\"font-weight:bold;\"" }],
-                "a": { "local": "local" }
+                "a": { "local": true }
               },
               {
                 "t": "html",
@@ -214,6 +214,7 @@
   {
     "t": "if",
     "n": "lipsum_bold",
+    "d": "",
     "o": "not",
     "c": [
       { "t": "html", "d": "\r\n\t<p " },
@@ -223,14 +224,14 @@
         "d": "true",
         "o": "is",
         "c": [{ "t": "html", "d": "style=\"font-weight:bold;\"" }],
-        "a": {}
+        "a": { "local": false }
       },
       {
         "t": "html",
         "d": ">\r\n\t\tDouble-nested: Lorem ipsum in global scope (should be bold)...\r\n\t</p>\r\n"
       }
     ],
-    "a": {}
+    "a": { "local": false }
   },
   {
     "t": "html",
@@ -241,9 +242,9 @@
     "n": "BulletList",
     "c": [
       { "t": "html", "d": " -->\r\n\r\n\t\t<li>" },
-      { "t": "var", "n": "random_string", "a": {} },
+      { "t": "var", "n": "random_string", "a": { "raw": false } },
       { "t": "html", "d": " - " },
-      { "t": "var", "n": "bullet_item", "a": { "raw": "raw" } },
+      { "t": "var", "n": "bullet_item", "a": { "raw": true } },
       { "t": "html", "d": "</li>\r\n\r\n\t<!-- " }
     ]
   },
