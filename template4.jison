@@ -1,14 +1,13 @@
 // Lexical grammar
 %lex
 
-%option caseless
-%options easy_keyword_rules
+%options case-insensitive easy_keyword_rules
 
 %x tp4
 %x tp4str
 
 %%
-"[{"|"<!--"\s*"[{"      this.begin('tp4'); return 'TP4_OPEN'
+"[{"|"<!--"\s*"[{"      this.pushState('tp4'); return 'TP4_OPEN'
 <tp4>"var"|"replace"    return 'TP4_VAR'
 <tp4>"if"|"condition"   return 'TP4_IF'
 <tp4>"section"          return 'TP4_SECTION'
@@ -23,11 +22,11 @@
 <tp4>"as"               return 'TP4_AS'
 <tp4>"raw"              return 'TP4_RAW'
 <tp4>"local"            return 'TP4_LOCAL'
-<tp4>["]                this.begin('tp4str'); return 'TP4_QUOTE'
+<tp4>["]                this.pushState('tp4str'); return 'TP4_QUOTE'
 <tp4str>[^"\n]+         return 'TP4_STRING'
-<tp4str>[\n]+           return 'TP4_LN_IN_STRING'
+<tp4str>[\n]+           return 'TP4_LF_IN_STRING'
 <tp4str>["]             this.popState(); return 'TP4_QUOTE'
-<tp4>[a-zA-Z0-9_]+      return 'TP4_VALUE'
+<tp4>[a-z0-9_]+         return 'TP4_VALUE'
 <tp4>[\s]+              // Ignore whitespace inside TP4-syntax
 <tp4>"}]"|"}]"\s*"-->"  this.popState(); return 'TP4_CLOSE'
 <tp4>"[{"               return 'TP4_OPEN'   // Disallow dangling TP4_OPEN
