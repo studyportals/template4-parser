@@ -87,8 +87,9 @@ part:   HTML
             $local = ($local ? true : false);
             $$ = { t: 'if', n: $name1, d: $compare, o: $tp4_op, c: $template, a: { local: $local } }
             if($name2 !== undefined && $name1 != $name2){
+              let name1 = $name1; let name2 = $name2;
               throw new Error(
-                `Unmatched if-statement on line ${yylineno}, expecting "${$name1}", got "${$name2}"`
+                `Unmatched if-statement on line ${@name2.first_line}, expecting "${name1}", got "${name2}"`
               );
             }
           %}
@@ -101,8 +102,9 @@ part:   HTML
             $local = ($local ? true : false);
             $$ = { t: 'if', n: $name1, d: $compare, o: $tp4_setop, c: $template, a: { local: $local } }
             if($name2 !== undefined && $name1 != $name2){
+              let name1 = $name1; let name2 = $name2;
               throw new Error(
-                `Unmatched if-statement on line ${yylineno}, expecting "${$name1}", got "${$name2}"`
+                `Unmatched if-statement on line ${@name2.first_line}, expecting "${name1}", got "${name2}"`
               );
             }
           %}
@@ -113,8 +115,9 @@ part:   HTML
           %{
             $$ = { t: 'section', n: $name1, c: $template }
             if($name2 !== undefined && $name1 != $name2){
+              let name1 = $name1; let name2 = $name2;
               throw new Error(
-                `Unmatched section-statement on line ${yylineno}, expecting "${$name1}", got "${$name2}"`
+                `Unmatched section-statement on line ${@name2.first_line}, expecting "${name1}", got "${name2}"`
               );
             }
           %}
@@ -125,8 +128,9 @@ part:   HTML
           %{
             $$ = { t: 'loop', n: $name1, c: $template }
             if($name2 !== undefined && $name1 != $name2){
+              let name1 = $name1; let name2 = $name2;
               throw new Error(
-                `Unmatched loop-statement on line ${yylineno}, expecting "${$name1}", got "${$name2}"`
+                `Unmatched loop-statement on line ${@name2.first_line}, expecting "${name1}", got "${name2}"`
               );
             }
           %}
