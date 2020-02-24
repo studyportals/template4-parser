@@ -1,3 +1,5 @@
+%parse-param cwd
+
 // Lexical grammar
 %lex
 
@@ -7,7 +9,7 @@
 %x tp4str
 
 %%
-"[{"|"<!--"\s*"[{"      this.pushState('tp4'); return 'TP4_OPEN'
+"<!--"\s*"[{"|"[{"      this.pushState('tp4'); return 'TP4_OPEN'
 <tp4>"var"|"replace"    return 'TP4_VAR'
 <tp4>"if"|"condition"   return 'TP4_IF'
 <tp4>"section"          return 'TP4_SECTION'
@@ -18,26 +20,31 @@
 <tp4>"not"|"!"          return 'TP4_NOT'
 <tp4>"end"              return 'TP4_END'
 <tp4>"template"         return 'TP4_TEMPLATE'
-<tp4>"component"        return 'TP4_COMPONENT'
 <tp4>"as"               return 'TP4_AS'
 <tp4>"raw"              return 'TP4_RAW'
-<tp4>"local"            return 'TP4_LOCAL'
-<tp4>["]                this.pushState('tp4str'); return 'TP4_QUOTE'
+<tp4>\"                 this.pushState('tp4str'); return 'TP4_QUOTE'
 <tp4str>[^"\n]+         return 'TP4_STRING'
-<tp4str>[\n]+           return 'TP4_LF_IN_STRING'
-<tp4str>["]             this.popState(); return 'TP4_QUOTE'
+<tp4str>\n+             return 'TP4_LF_IN_STRING'
+<tp4str>\"              this.popState(); return 'TP4_QUOTE'
 <tp4>[a-z0-9_]+         return 'TP4_VALUE'
 <tp4>[\s]+              // Ignore whitespace inside TP4-syntax
-<tp4>"}]"|"}]"\s*"-->"  this.popState(); return 'TP4_CLOSE'
+<tp4>"}]"\s*"-->"|"}]"  this.popState(); return 'TP4_CLOSE'
 <tp4>"[{"               return 'TP4_OPEN'   // Disallow dangling TP4_OPEN
 "}]"                    return 'TP4_CLOSE'  // Disallow dangling TP4_CLOSE
-
-[{}\[\]]+               return 'CONTROL_CHARS'
-[^{}\[\]]+              return 'HTML' // These two capture "everything else"
+[{\[<]+                 return 'CONTROL_CHARS'
+[^{\[<]+                return 'HTML' // These two capture "everything else"
 
 <<EOF>>                 return 'EOF'
 
 /lex
+
+%{
+  const fs = require("fs");
+  function requireUncached(module){
+    delete require.cache[require.resolve(module)];
+    return require(module);
+  }
+%}
 
 %ebnf
 %start file
@@ -79,13 +86,12 @@ part:   HTML
             $$ = { t: 'var', n: $name, a: { raw: $raw } }
           %}
       | // [{if … is|!is … }] … [{if end}]
-        TP4_OPEN TP4_IF TP4_VALUE[name1] tp4_op (TP4_VALUE|tp4_string)[compare] TP4_LOCAL?[local] TP4_CLOSE
+        TP4_OPEN TP4_IF TP4_VALUE[name1] tp4_op (TP4_VALUE|tp4_string)[compare] TP4_CLOSE
           template
         TP4_OPEN TP4_IF TP4_VALUE?[name2] TP4_END TP4_CLOSE
           %{
             $compare = ($compare[0] === undefined ? '' : $compare[0]);
-            $local = ($local ? true : false);
-            $$ = { t: 'if', n: $name1, d: $compare, o: $tp4_op, c: $template, a: { local: $local } }
+            $$ = { t: 'if', n: $name1, d: $compare, o: $tp4_op, c: $template }
             if($name2 !== undefined && $name1 != $name2){
               let name1 = $name1; let name2 = $name2;
               throw new Error(
@@ -94,13 +100,12 @@ part:   HTML
             }
           %}
       | // [{if … in|!in … }] … [{if end}]
-        TP4_OPEN TP4_IF TP4_VALUE[name1] tp4_setop (TP4_VALUE|tp4_string)+[compare] TP4_LOCAL?[local] TP4_CLOSE
+        TP4_OPEN TP4_IF TP4_VALUE[name1] tp4_setop (TP4_VALUE|tp4_string)+[compare] TP4_CLOSE
           template
         TP4_OPEN TP4_IF TP4_VALUE?[name2] TP4_END TP4_CLOSE
           %{
             $compare = $compare.map(x => x === undefined ? '' : x);
-            $local = ($local ? true : false);
-            $$ = { t: 'if', n: $name1, d: $compare, o: $tp4_setop, c: $template, a: { local: $local } }
+            $$ = { t: 'if', n: $name1, d: $compare, o: $tp4_setop, c: $template }
             if($name2 !== undefined && $name1 != $name2){
               let name1 = $name1; let name2 = $name2;
               throw new Error(
@@ -137,17 +142,15 @@ part:   HTML
       | // [{include … }]
         TP4_OPEN TP4_INCLUDE tp4_string TP4_CLOSE
           %{
-            $$ = { t: 'include', d: $tp4_string }
+            let cwd_i = (typeof cwd === 'undefined' ? yy.cwd : cwd);
+            $$ = { t: 'html', d: fs.readFileSync(cwd_i + $tp4_string, "utf8") }
           %}
       | // [{include template … }]
         TP4_OPEN TP4_INCLUDE TP4_TEMPLATE tp4_string tp4_as_name TP4_CLOSE
           %{
-            $$ = { t: 'template', d: $tp4_string, n: $tp4_as_name }
-          %}
-      | // [{include component … }]
-        TP4_OPEN TP4_INCLUDE TP4_COMPONENT tp4_string tp4_as_name TP4_CLOSE
-          %{
-            $$ = { t: 'component', d: $tp4_string, n: $tp4_as_name }
+            let cwd_t= (typeof cwd === 'undefined' ? yy.cwd : cwd);
+            let data = requireUncached("./template4.js").parse(fs.readFileSync(cwd_t + $tp4_string, "utf8"), cwd_t);
+            $$ = { t: 'include', d: data, n: $tp4_as_name }
           %}
 ;
 
@@ -167,3 +170,5 @@ tp4_setop:  TP4_IN          { $$ = 'is' }
 tp4_as_name:  // Empty
             | TP4_AS (TP4_VALUE|tp4_string)[value] { $$ = $value }
 ;
+
+%%

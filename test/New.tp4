@@ -7,10 +7,15 @@
 		(the above comment is a test in itself already ;)
 	Adds a test for spaces in TP4 includes.
 	Support for strings inside condition statements (including empty strings; "")
-	Support for "local" at the end of set-conditions
 	Support for !is (instead of "not"; for parity with "!in")
-	Closing tag name/identifier is now optional (when provided open-tag and closin-
+	Closing tag name/identifier is now optional (when provided open-tag and closing-
 	tag names do still need to match) - it served no purpose in the grammar
+	Removed "local" flag from var- and if-statements (served no real purpose)
+	Remove "include component" (fell out of grace; currently unused)
+	Proper handling of whitespaces and comments. The old PHP-based parser would
+	eat all the whitespaces and aggressively mangle HTML-comments. The new parser
+	is only concerned with HTML-comments that are part of Template4-tags (and
+	leaves the rest untouched).
 -->
 
 <hr>
@@ -61,12 +66,6 @@
 	[{condition end}]
 </p>
 
-<h1>Include Component</h1>
-
-[{condition test_me is false}]
-	[{include component "TestComponent.tp4" as WoeiComponent}]
-[{condition end}]
-
 <h1>Recursive Repeater</h1>
 
 <p>The output for the <strong>correct</strong> approach is displayed below. The
@@ -111,10 +110,10 @@ it from polluting the template, which would cause problems with further tests.</
 		[{section Iets}]
 
 			[{if test_me is false}]
-				[{include template "Templates\IncludeTemplate.tp4" as "WoeiTemplate"}]
+				[{include template "IncludeTemplate.tp4" as "WoeiTemplate"}]
 			[{if end}]
 
-			<p [{if lipsum_bold is true local}]style="font-weight:bold;"[{if lipsum_bold end}]>
+			<p [{if lipsum_bold is true}]style="font-weight:bold;"[{if lipsum_bold end}]>
 				Lorem ipsum inside a section...
 			</p>
 
@@ -124,7 +123,7 @@ it from polluting the template, which would cause problems with further tests.</
 
 [{section Test end}]
 
-[{include template "Templates\Include with Spaces.tp4"}]
+[{include "Include with Spaces.tp4"}]
 
 [{if lipsum_bold !is ""}]
 	<p [{if lipsum_bold is true}]style="font-weight:bold;"[{if end}]>

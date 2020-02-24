@@ -21,14 +21,6 @@ The following elements are present:
 - node children (`c`)
 - node data (`d`)
 
-Two test Template4-files are included:
-
-1. `Test.tp4` &ndash; the original test-file used to develop the PHP-based
-   Template4-engine about 10 years ago.
-2. `New.tp4` &ndash; an updated version of `Test.tp4` to accommodate for
-   (backwards-compatible) improvements to the syntax made possible by the new
-   lexer/parser approach (changes noted at the start of the file).
-
 To test changes made to the Jison-file, run:
 
 ```shell
@@ -43,10 +35,11 @@ The `test`- and `output`-scripts are currently hardcoded to using `test/New.tp4`
 
 - I haven't been able to find a good way of capturing "everything, except for
   the TP4-syntax". The current approach with two patterns &ndash; one capturing
-  everything except `{}[]` (the Template4 control-characters) and one capturing
-  only `{}[]` &ndash; works just fine from a lexer/parser perspective, but it
-  requires some array-manipulation (the first block of JavaScript-logic in the
-  language grammar) to prevent spamming the AST with unnecessary HTML-nodes.
+  everything except `[{<` (the Template4 opening control-characters) and one
+  capturing only `[{<` &ndash; works just fine from a lexer/parser perspective,
+  but it requires some array-manipulation (the first block of JavaScript-logic
+  in the language grammar) to prevent adding a lot of unnecessary HTML-nodes to
+  the AST.
 - There are two implementations of jison: The
   [original (vanilla) jison](https://github.com/zaach/jison) and
   [jison-gho](https://github.com/GerHobbelt/jison). The Template4 Jison-file is
@@ -58,6 +51,13 @@ The `test`- and `output`-scripts are currently hardcoded to using `test/New.tp4`
   `Exception` is a workaround for
   [GerHobbelt/jison#22](https://github.com/GerHobbelt/jison/issues/22). Vanilla
   jison doesn't need this workaround (but is not harmed by it either).
+- The `let cwd_X = (typeof cwd === 'undefined' ? yy.cwd : cwd);` statement in
+  handling file includes is to deal with the fact that in vanilla jison, context
+  arguments are accessed via their name (e.g. `cwd`), but in jison-gho they are
+  (apparently) are only available via `yy.cwd`. The variable `_X` part is
+  required for the code to remain strict-mode compliant (as the assignments
+  happen in the same switch-statement). This one is still open for further
+  refinement...
 
 ## References
 

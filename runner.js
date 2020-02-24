@@ -2,7 +2,7 @@ const fs = require("fs");
 const prettier = require("prettier");
 
 function exec(input) {
-  return require("./src/template4.js").parse(input);
+  return require("./src/template4.js").parse(input, "test/");
 }
 
 const template4 = fs.readFileSync("test/New.tp4", "utf8");
