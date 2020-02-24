@@ -5,15 +5,14 @@
   "main": "runner.js",
   "scripts": {
     "build": "jison template4.jison -o src/template4.js",
-    "build-vanilla": "npx --ignore-existing jison template4.jison -o src/template4.js",
-    "test": "node runner.js"
+    "build:vanilla": "npx --ignore-existing jison template4.jison -o src/template4.js",
+    "output": "node runner.js output",
+    "test": "node runner.js test"
   },
   "author": "Thijs Putman <thijs@studyportals.com>",
   "license": "BSD-3-Clause",
   "devDependencies": {
     "eslint": "~6.8.0",
-    "eslint-config-prettier": "~6.10.0",
-    "eslint-plugin-prettier": "~3.1.2",
     "jison-gho": "~0.6.1-216",
     "prettier": "~1.19.1"
   }
