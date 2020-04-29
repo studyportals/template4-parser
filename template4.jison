@@ -44,6 +44,16 @@
     delete require.cache[require.resolve(module)];
     return require(module);
   }
+  function readInclude(file, cwd){
+    cwd = (typeof cwd === 'undefined' ? "" : cwd);
+    cwd = cwd.replace(/(\/|\\)+$/, "");
+    try{
+      return fs.readFileSync(cwd + "/" + file, "utf8");
+    }
+    catch(e){
+      return fs.readFileSync(file, "utf8");
+    }
+  }
 %}
 
 %ebnf
@@ -142,14 +152,36 @@ part:   HTML
       | // [{include … }]
         TP4_OPEN TP4_INCLUDE tp4_string TP4_CLOSE
           %{
-            let cwd_i = (typeof cwd === 'undefined' ? yy.cwd : cwd);
-            $$ = { t: 'html', d: fs.readFileSync(cwd_i + $tp4_string, "utf8") }
+            try{
+              var data = readInclude(
+                $tp4_string,
+                (typeof cwd === 'undefined' ? yy.cwd : cwd)
+              );
+            }
+            catch(e){
+              let tp4_string = $tp4_string;
+              throw new Error(
+                `Unable to include "${tp4_string}" on line ${@tp4_string.first_line}`
+              );
+            }
+            $$ = { t: 'html', d: data }
           %}
       | // [{include template … }]
         TP4_OPEN TP4_INCLUDE TP4_TEMPLATE tp4_string tp4_as_name TP4_CLOSE
           %{
-            let cwd_t= (typeof cwd === 'undefined' ? yy.cwd : cwd);
-            let data = requireUncached("./template4.js").parse(fs.readFileSync(cwd_t + $tp4_string, "utf8"), cwd_t);
+            let cwd_t = (typeof cwd === 'undefined' ? yy.cwd : cwd);
+            try{
+              var data = requireUncached("./template4.js").parse(
+                readInclude($tp4_string, cwd_t),
+                cwd_t
+              );
+            }
+            catch(e){
+              let tp4_string = $tp4_string;
+              throw new Error(
+                `Unable to include template "${tp4_string}" on line ${@tp4_string.first_line}`
+              );
+            }
             $$ = { t: 'include', d: data, n: $tp4_as_name }
           %}
 ;

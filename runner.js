@@ -2,7 +2,13 @@ const fs = require("fs");
 const prettier = require("prettier");
 
 function exec(input) {
-  return require("./src/template4.js").parse(input, "test/");
+  /**
+   * The second argument to "parse()" is the working-directory (cwd) of the
+   * Template-engine. This is used as the base to resolve file includes. It
+   * should be the folder in which the template being parsed is located. In our
+   * current (hard-coded) approach, it is thus "test".
+   */
+  return require("./src/template4.js").parse(input, "test");
 }
 
 const template4 = fs.readFileSync("test/New.tp4", "utf8");
