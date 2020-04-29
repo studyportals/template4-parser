@@ -1,7 +1,15 @@
-# Jison-based parser-generator for Template4
+# Jison-based Parser-generator for Template4
 
-Formalising the Template4-syntax and &dash; perhaps &dash; creating a
-production-ready JavaScript-based Template4-parser.
+Formalising the [Template4](https://github.com/studyportals/Template4)-syntax
+and a &ndash; 🛠 work-in-progress &ndash; JavaScript-based
+[Template4](https://github.com/studyportals/Template4)-parser.
+
+- [Usage](#usage)
+- [Differences with PHP-based implementation](#differences-with-php-based-implementation)
+- [Caveats](#caveats)
+- [References](#references)
+
+## Usage
 
 ```shell
 npm install
@@ -31,6 +39,31 @@ npm run test
 The `test`- and `output`-scripts are currently hardcoded to using `test/New.tp4`
 (and the accompanying `test/New.json` reference output).
 
+## Differences with PHP-based implementation
+
+The Jison-based parser is fully backwards-compatible with the Template4-syntax
+used by the PHP-based [Template4](https://github.com/studyportals/Template4)
+implementation.
+
+There are some enhancements though:
+
+- Support for quoted strings inside condition statements (including empty
+  strings; e.g. `""`). In Template4 this was only possible by using `false`
+  instead of an actual empty string; it furthermore was not possible to use
+  spaces inside conditional arguments (as quoting strings was not possible).
+- The closing tag identifier is now optional (when provided, open-tag and
+  closing-tag identifiers do still need to match) &ndash; it serves no purpose
+  in the Jison-grammar.
+- Proper handling of whitespaces and comments. The old PHP-based parser would
+  eat all whitespaces and aggressively mangle HTML-comments. The new parser is
+  only concerned with HTML-comments that are part of Template4-tags
+  (`<!--[{..}]-->` and leaves other comments and whitespace untouched).
+
+📋 **TODO**: A second Jison-file (e.g. `template4-compat.jison`) should be
+provided that does _not_ allow any of the above enhancements. This should be
+used when using the Jison-based parser to validate templates fed into the
+PHP-based parser.
+
 ## Caveats
 
 - I haven't been able to find a good way of capturing "everything, except for
@@ -46,7 +79,7 @@ The `test`- and `output`-scripts are currently hardcoded to using `test/New.tp4`
   compatible (and _should_ aim for compatibility) with both versions. By default
   `jison-gho` is used; use `npm run build:vanilla` to generate a parser using
   the original jison version &ndash; the jury is still out which of the two to
-  use for the production-build...
+  use for a possible future production-build...
 - The `let name1 = $name1; let name2 = $name2;` statement before throwing an
   `Exception` is a workaround for
   [GerHobbelt/jison#22](https://github.com/GerHobbelt/jison/issues/22). Vanilla
@@ -63,5 +96,3 @@ The `test`- and `output`-scripts are currently hardcoded to using `test/New.tp4`
 
 1. https://github.com/zaach/jison
 2. https://github.com/GerHobbelt/jison
-3. http://zaa.ch/jison/docs/
-4. http://dinosaur.compilertools.net/bison/index.html
