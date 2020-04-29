@@ -1,13 +1,15 @@
-/* lexical grammar */
+%parse-param cwd
+
+// Lexical grammar
 %lex
 
-%option caseless
+%options case-insensitive easy_keyword_rules
 
 %x tp4
 %x tp4str
 
 %%
-"[{"|"<!--"\s*"[{"      this.begin("tp4"); return "TP4_OPEN"
+"<!--"\s*"[{"|"[{"      this.pushState('tp4'); return 'TP4_OPEN'
 <tp4>"var"|"replace"    return 'TP4_VAR'
 <tp4>"if"|"condition"   return 'TP4_IF'
 <tp4>"section"          return 'TP4_SECTION'
@@ -18,117 +20,174 @@
 <tp4>"not"|"!"          return 'TP4_NOT'
 <tp4>"end"              return 'TP4_END'
 <tp4>"template"         return 'TP4_TEMPLATE'
-<tp4>"component"        return 'TP4_COMPONENT'
 <tp4>"as"               return 'TP4_AS'
 <tp4>"raw"              return 'TP4_RAW'
-<tp4>"local"            return 'TP4_LOCAL'
-<tp4>["]                this.begin("tp4str"); return "TP4_QUOTE"
-<tp4str>[^"\n]+         return "TP4_STRING"
-<tp4str>[\n]+           return "TP4_LN_IN_STRING"
-<tp4str>["]             this.popState(); return "TP4_QUOTE"
-<tp4>[a-zA-Z0-9_]+      return 'TP4_VALUE'
-<tp4>[\s]+              /* ignore whitespace inside TP4-syntax */
-<tp4>"}]"|"}]"\s*"-->"  this.popState(); return "TP4_CLOSE"
-<tp4>"[{"               return 'TP4_OPEN'   /* disallow dangling TP4_OPEN */
-"}]"                    return 'TP4_CLOSE'  /* disallow dangling TP4_CLOSE */
-
-[{}[]]+                 return 'CONTROL_CHARS'
-[^{}[]]+                return 'HTML' /* these two capture "everything else" */
+<tp4>\"                 this.pushState('tp4str'); return 'TP4_QUOTE'
+<tp4str>[^"\n]+         return 'TP4_STRING'
+<tp4str>\n+             return 'TP4_LF_IN_STRING'
+<tp4str>\"              this.popState(); return 'TP4_QUOTE'
+<tp4>[a-z0-9_]+         return 'TP4_VALUE'
+<tp4>[\s]+              // Ignore whitespace inside TP4-syntax
+<tp4>"}]"\s*"-->"|"}]"  this.popState(); return 'TP4_CLOSE'
+<tp4>"[{"               return 'TP4_OPEN'   // Disallow dangling TP4_OPEN
+"}]"                    return 'TP4_CLOSE'  // Disallow dangling TP4_CLOSE
+[{\[<]+                 return 'CONTROL_CHARS'
+[^{\[<]+                return 'HTML' // These two capture "everything else"
 
 <<EOF>>                 return 'EOF'
 
 /lex
 
-%start file
-
-%% /* language grammar */
+%{
+  const fs = require("fs");
+  function requireUncached(module){
+    delete require.cache[require.resolve(module)];
+    return require(module);
+  }
+  function readInclude(file, cwd){
+    cwd = (typeof cwd === 'undefined' ? "" : cwd);
+    cwd = cwd.replace(/(\/|\\)+$/, "");
+    try{
+      return fs.readFileSync(cwd + "/" + file, "utf8");
+    }
+    catch(e){
+      return fs.readFileSync(file, "utf8");
+    }
+  }
+%}
 
 %ebnf
+%start file
 
-file: template EOF {console.log(JSON.stringify($1))}
+%% // Language grammar
+
+file: template EOF {return $template;}
 ;
 
-template:   /* empty */
+template:   // Empty
           | template part
-              {{
-                if($1 === undefined){
-                  $$ = [$2]
+              %{
+                if($template === undefined || typeof $$ != 'object'){
+                  $$ = [$part]
                 }
                 else{
-                  if($2.t == 'html' && $$.slice(-1)[0].t == 'html'){
-                    $$.push({'t': 'html', d: $$.pop().d.concat($2.d)})
+                  if($part.t == 'html' && $$.slice(-1)[0].t == 'html'){
+                    $$.push({'t': 'html', d: $$.pop().d.concat($part.d)})
                   }
                   else{
-                    $$.push($2)
+                    $$.push($part)
                   }
                 }
-              }}
+              %}
 ;
 
 part:   HTML
-          {{
-            $$ = { t: 'html', d: $1 }
-          }}
+          %{
+            $$ = { t: 'html', d: $HTML }
+          %}
       | CONTROL_CHARS
-          {{
-            $$ = { t: 'html', d: $1 }
-          }}
-      | TP4_OPEN TP4_VAR TP4_VALUE TP4_RAW? TP4_CLOSE /* [{var ... }] */
-          {{
-            $$ = { t: 'var', n: $3, a: { raw: $4 } }
-          }}
-      | TP4_OPEN TP4_IF TP4_VALUE tp4_op (TP4_VALUE|tp4_string) TP4_LOCAL? TP4_CLOSE
+          %{
+            $$ = { t: 'html', d: $CONTROL_CHARS }
+          %}
+      | // [{var … }]
+        TP4_OPEN TP4_VAR TP4_VALUE[name] TP4_RAW?[raw] TP4_CLOSE
+          %{
+            $raw = ($raw ? true : false);
+            $$ = { t: 'var', n: $name, a: { raw: $raw } }
+          %}
+      | // [{if … is|!is … }] … [{if end}]
+        TP4_OPEN TP4_IF TP4_VALUE[name1] tp4_op (TP4_VALUE|tp4_string)[compare] TP4_CLOSE
           template
-        TP4_OPEN TP4_IF TP4_VALUE? TP4_END TP4_CLOSE /* [{if ... is|!is ... }] ... [{if end}] */
-          {{
-            $$ = { t: 'if', n: $3, d: $5, o: $4, c: $8, a: { local: $6 } }
-            if($11 !== undefined && $3 != $11){
-              throw new Error(yylineno);
+        TP4_OPEN TP4_IF TP4_VALUE?[name2] TP4_END TP4_CLOSE
+          %{
+            $compare = ($compare[0] === undefined ? '' : $compare[0]);
+            $$ = { t: 'if', n: $name1, d: $compare, o: $tp4_op, c: $template }
+            if($name2 !== undefined && $name1 != $name2){
+              let name1 = $name1; let name2 = $name2;
+              throw new Error(
+                `Unmatched if-statement on line ${@name2.first_line}, expecting "${name1}", got "${name2}"`
+              );
             }
-          }}
-      | TP4_OPEN TP4_IF TP4_VALUE tp4_setop (TP4_VALUE|tp4_string)+ TP4_LOCAL? TP4_CLOSE
+          %}
+      | // [{if … in|!in … }] … [{if end}]
+        TP4_OPEN TP4_IF TP4_VALUE[name1] tp4_setop (TP4_VALUE|tp4_string)+[compare] TP4_CLOSE
           template
-        TP4_OPEN TP4_IF TP4_VALUE? TP4_END TP4_CLOSE /* [{if ... in|!in ... }] ... [{if end}] */
-          {{
-            $$ = { t: 'if', n: $3, d: $5, o: $4, c: $8, a: { local: $6 } }
-            if($11 !== undefined && $3 != $11){
-              throw new Error(yylineno);
+        TP4_OPEN TP4_IF TP4_VALUE?[name2] TP4_END TP4_CLOSE
+          %{
+            $compare = $compare.map(x => x === undefined ? '' : x);
+            $$ = { t: 'if', n: $name1, d: $compare, o: $tp4_setop, c: $template }
+            if($name2 !== undefined && $name1 != $name2){
+              let name1 = $name1; let name2 = $name2;
+              throw new Error(
+                `Unmatched if-statement on line ${@name2.first_line}, expecting "${name1}", got "${name2}"`
+              );
             }
-          }}
-      | TP4_OPEN TP4_SECTION TP4_VALUE TP4_CLOSE
+          %}
+      | // [{section … }] … [{section end}]
+        TP4_OPEN TP4_SECTION TP4_VALUE[name1] TP4_CLOSE
           template
-        TP4_OPEN TP4_SECTION TP4_VALUE? TP4_END TP4_CLOSE /* [{section ... }] ... [{section end}] */
-          {{
-            $$ = { t: 'section', n: $3, c: $5 }
-            if($8 !== undefined && $3 != $8){
-              throw new Error(yylineno);
+        TP4_OPEN TP4_SECTION TP4_VALUE?[name2] TP4_END TP4_CLOSE
+          %{
+            $$ = { t: 'section', n: $name1, c: $template }
+            if($name2 !== undefined && $name1 != $name2){
+              let name1 = $name1; let name2 = $name2;
+              throw new Error(
+                `Unmatched section-statement on line ${@name2.first_line}, expecting "${name1}", got "${name2}"`
+              );
             }
-          }}
-      | TP4_OPEN TP4_LOOP TP4_VALUE TP4_CLOSE
+          %}
+      | // [{loop … }] … [{loop end}]
+        TP4_OPEN TP4_LOOP TP4_VALUE[name1] TP4_CLOSE
           template
-        TP4_OPEN TP4_LOOP TP4_VALUE? TP4_END TP4_CLOSE /* [{loop ... }] ... [{loop end}]*/
-          {{
-            $$ = { t: 'loop', n: $3, c: $5 }
-            if($8 !== undefined && $3 != $8){
-              throw new Error(yylineno);
+        TP4_OPEN TP4_LOOP TP4_VALUE?[name2] TP4_END TP4_CLOSE
+          %{
+            $$ = { t: 'loop', n: $name1, c: $template }
+            if($name2 !== undefined && $name1 != $name2){
+              let name1 = $name1; let name2 = $name2;
+              throw new Error(
+                `Unmatched loop-statement on line ${@name2.first_line}, expecting "${name1}", got "${name2}"`
+              );
             }
-          }}
-      | TP4_OPEN TP4_INCLUDE tp4_string TP4_CLOSE /* [{include ... }] */
-          {{
-            $$ = { t: 'include', d: $3 }
-          }}
-      | TP4_OPEN TP4_INCLUDE TP4_TEMPLATE tp4_string tp4_as_name TP4_CLOSE /* [{include template ... }] */
-          {{
-            $$ = { t: 'template', d: $4, n: $5 }
-          }}
-      | TP4_OPEN TP4_INCLUDE TP4_COMPONENT tp4_string tp4_as_name TP4_CLOSE /* [{include component ... }] */
-          {{
-            $$ = { t: 'component', d: $4, n: $5 }
-          }}
+          %}
+      | // [{include … }]
+        TP4_OPEN TP4_INCLUDE tp4_string TP4_CLOSE
+          %{
+            try{
+              var data = readInclude(
+                $tp4_string,
+                (typeof cwd === 'undefined' ? yy.cwd : cwd)
+              );
+            }
+            catch(e){
+              let tp4_string = $tp4_string;
+              throw new Error(
+                `Unable to include "${tp4_string}" on line ${@tp4_string.first_line}`
+              );
+            }
+            $$ = { t: 'html', d: data }
+          %}
+      | // [{include template … }]
+        TP4_OPEN TP4_INCLUDE TP4_TEMPLATE tp4_string tp4_as_name TP4_CLOSE
+          %{
+            let cwd_t = (typeof cwd === 'undefined' ? yy.cwd : cwd);
+            try{
+              var data = requireUncached("./template4.js").parse(
+                readInclude($tp4_string, cwd_t),
+                cwd_t
+              );
+            }
+            catch(e){
+              let tp4_string = $tp4_string;
+              throw new Error(
+                `Unable to include template "${tp4_string}" on line ${@tp4_string.first_line}`
+              );
+            }
+            $$ = { t: 'include', d: data, n: $tp4_as_name }
+          %}
 ;
 
 tp4_string:   TP4_QUOTE TP4_QUOTE             { $$ = undefined }
-            | TP4_QUOTE TP4_STRING TP4_QUOTE  { $$ = $2 }
+            | TP4_QUOTE TP4_STRING TP4_QUOTE  { $$ = $TP4_STRING }
 ;
 
 tp4_op:   TP4_IS            { $$ = 'is' }
@@ -140,6 +199,8 @@ tp4_setop:  TP4_IN          { $$ = 'is' }
           | TP4_NOT TP4_IN  { $$ = 'not' }
 ;
 
-tp4_as_name:  /* empty */
-            | TP4_AS (TP4_VALUE | tp4_string) { $$ = $2 }
+tp4_as_name:  // Empty
+            | TP4_AS (TP4_VALUE|tp4_string)[value] { $$ = $value }
 ;
+
+%%

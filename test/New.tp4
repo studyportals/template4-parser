@@ -1,147 +1,124 @@
-<!--
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New</title>
+</head>
+<body>
 
-	Modified TP4 Test
+	<h1>[{var header1}]</h1>
 
-	Omits the not-supported translation-markers (%txtSomething%)
-	Adds additional tests to ensure literal []{} are properly processed
-		(the above comment is a test in itself already ;)
-	Adds a test for spaces in TP4 includes.
-	Support for strings inside condition statements (including empty strings; "")
-	Support for "local" at the end of set-conditions
-	Support for !is (instead of "not"; for parity with "!in")
-	Closing tag name/identifier is now optional (when provided open-tag and closin-
-	tag names do still need to match) - it served no purpose in the grammar
--->
+	<h2>Replace &amp; Replace Raw</h2>
+	<p>[{replace header2}].</p>
+	<p>[{var header2 raw}].</p>
 
-<hr>
+	<h1>Condition Sets</h1>
 
-<h1>[{var header1}]</h1>
+	[{if in_set in 1 2 3}]
+		<p>In 1, 2 or 3!</p>
+	[{if end}]
 
-<h2>Replace &amp; Replace Raw</h2>
-<p>[{replace header2}].</p>
-<p>[{var header2 raw}].</p>
-
-<h1>Condition Sets</h1>
-
-[{if in_set in 1 2 3}]
-	<p>In 1, 2 or 3!</p>
-[{if end}]
-
-[{condition in_set !in 1 2 3}]
-	<p><strong>NOT</strong> in 1, 2 or 3!</p>
-[{condition end}]
-
-[{if quoted_if is "Hello World!"}]
-	<p>Quoted if-statement</p>
-[{if end}]
-
-[{if quoted_set in "Hello World!" "Woei" ""}]
-	<p>In "Hello World!", "Woei" or ""</p>
-[{if quoted_set end}]
-
-[{if in_set2 in foo bar}]
-	<p>Either foo or bar: <strong>[{var in_set2}]</strong></p>
-[{if in_set2 end}]
-
-<p>
-	The following line should end with <strong>[{replace random_string}]</strong>.
-	<br/>
-	Here are some literal [, ], { and } characters; [Hello] {World}!
-</p>
-
-<h1>TemplatedObject: [{replace templated_test}]</h1>
-
-<p>
-	[{replace templated_test__test1}]
-	<br>
-	[{replace templated_test__test2}]
-	<br>
-	[{condition templated_test__test3_1 is true}]
-		<em>is true!</em>
+	[{condition in_set !in 1 2 3}]
+		<p><strong>NOT</strong> in 1, 2 or 3!</p>
 	[{condition end}]
-</p>
 
-<h1>Include Component</h1>
+	[{if quoted_if is "Hello World!"}]
+		<p>Quoted if-statement</p>
+	[{if end}]
 
-[{condition test_me is false}]
-	[{include component "TestComponent.tp4" as WoeiComponent}]
-[{condition end}]
+	[{if quoted_set in "Hello World!" "Foo" ""}]
+		<p>In "Hello World!", "Foo" or ""</p>
+	[{if quoted_set end}]
 
-<h1>Recursive Repeater</h1>
+	[{if in_set2 in foo bar}]
+		<p>Either foo or bar: <strong>[{var in_set2}]</strong></p>
+	[{if in_set2 end}]
 
-<p>The output for the <strong>correct</strong> approach is displayed below. The
-incorrect (c.q. wrong) approach is executed on a clone of the template to prevent
-it from polluting the template, which would cause problems with further tests.</p>
-
-[{section ListWrapper}]
-
-	<ol>
-
-		<!--[{loop MyList}]-->
-			<li>
-				Level [{var level}], value: [{var value}]
-				<ol>
-					<!--	[{section SubList}][{section SubList end}]    	-->
-				</ol>
-			</li>
-		<!--[{loop end}]-->
-
-	</ol>
-
-[{section end}]
-
-<h1>Nested Sections &amp; Includes</h1>
-
-<p>Below, both "Static Include" and "Include Template" should be present.</p>
-
-[{section Test}]
-
-	[{section Iets}]
-
-		[{section Iets}]
-
-			<!--[{include "IncludeStatic.html"}]-->
-
-		[{section Iets end}]
-
-	[{section Iets end}]
-
-	[{section NogIets}]
-
-		[{section Iets}]
-
-			[{if test_me is false}]
-				[{include template "Templates\IncludeTemplate.tp4" as "WoeiTemplate"}]
-			[{if end}]
-
-			<p [{if lipsum_bold is true local}]style="font-weight:bold;"[{if lipsum_bold end}]>
-				Lorem ipsum inside a section...
-			</p>
-
-		[{section Iets end}]
-
-	[{section NogIets end}]
-
-[{section Test end}]
-
-[{include template "Templates\Include with Spaces.tp4"}]
-
-[{if lipsum_bold !is ""}]
-	<p [{if lipsum_bold is true}]style="font-weight:bold;"[{if end}]>
-		Double-nested: Lorem ipsum in global scope (should be bold)...
+	<p>
+		The following line should end with <strong>[{replace random_string}]</strong>.
+		<br/>
+		Here are some literal [, ], { and } characters; [Hello] {World}!
 	</p>
-[{if end}]
 
-<h1>Repeater &amp; Scope</h1>
+	<h1>Recursive Repeater</h1>
 
-<ul>
+	<p>The output for the <strong>correct</strong> approach is displayed below. The
+	incorrect (c.q. wrong) approach is executed on a clone of the template to
+	prevent it from polluting the template, which would cause problems with further
+	tests.</p>
 
-	<!-- [{repeater BulletList}] -->
+	[{section ListWrapper}]
 
-		<li>[{replace random_string}] - [{var bullet_item raw}]</li>
+		<ol>
 
-	<!-- [{repeater end }] -->
+			<!--[{loop MyList}]-->
+				<li>
+					Level [{var level}], value: [{var value}]
+					<ol>
+						<!--	[{section SubList}][{section SubList end}]    	-->
+					</ol>
+				</li>
+			<!--[{loop end}]-->
 
-</ul>
+		</ol>
 
-<hr>
+	[{section end}]
+
+	<h1>Nested Sections &amp; Includes</h1>
+
+	<p>Below, "Static include" and "Include template" and "Include template with
+	spaces" should be present.</p>
+
+	[{section Test}]
+
+		[{section Something}]
+
+			[{section Something}]
+
+				<!--[{include "IncludeStatic.html"}]-->
+
+			[{section Something end}]
+
+		[{section end}]
+
+		[{section AnotherThing}]
+
+			[{section Something}]
+
+				[{if test_me is false}]
+					[{include template "IncludeTemplate.tp4" as "FooTemplate"}]
+				[{if end}]
+
+				<p [{if lipsum_bold is true}]style="font-weight:bold;"[{if lipsum_bold end}]>
+					Lorem ipsum inside a section...
+				</p>
+
+			[{section Something end}]
+
+		[{section end}]
+
+	[{section Test end}]
+
+	[{include "Include with Spaces.tp4"}]
+
+	[{if lipsum_bold !is ""}]
+		<p [{if lipsum_bold is true}]style="font-weight:bold;"[{if end}]>
+			Double-nested: Lorem ipsum in global scope (should be bold)...
+		</p>
+	[{if end}]
+
+	<h1>Repeater &amp; Scope</h1>
+
+	<ul>
+
+		<!-- [{repeater BulletList}] -->
+
+			<li>[{replace random_string}] &ndash; [{var bullet_item raw}]</li>
+
+		<!-- [{repeater end }] -->
+
+	</ul>
+
+</body>
+</html>
