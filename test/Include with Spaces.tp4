@@ -1,4 +1,5 @@
 <p>
-  Woei with <strong><em>spaces!!!M</em></strong> [{var test}].</br>
-  Hallo?
+  Include template with <strong><em>spaces!!!</em></strong> [{var test}].
+  </br>
+  Hello World!
 </p>

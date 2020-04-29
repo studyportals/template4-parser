@@ -45,12 +45,19 @@ The Jison-based parser is fully backwards-compatible with the Template4-syntax
 used by the PHP-based [Template4](https://github.com/studyportals/Template4)
 implementation.
 
-There are some enhancements though:
+There are various enhancements though:
 
-- Support for quoted strings inside condition statements (including empty
-  strings; e.g. `""`). In Template4 this was only possible by using `false`
-  instead of an actual empty string; it furthermore was not possible to use
-  spaces inside conditional arguments (as quoting strings was not possible).
+- Support for quoted strings inside `condition`-statements.
+  - Includes support for empty strings (e.g. `""`) &ndash; in the PHP-based
+    implementation this is only possible by using `false` instead of an empty
+    string.
+  - Furthermore, this allows spaces to be used in condition arguments (e.g.
+    `"Hello World!"`).
+  - Support also extends to set-operations (`in`; `!in`) &ndash; allowing for
+    sets like `"Option 1 ", "Option 2"`.
+- Support for quoted strings inside `include`-statements &ndash; this makes it
+  possible to include files with spaces in their names.
+- Support for `!is` (together with `not`) &ndash; for parity with `!in`.
 - The closing tag identifier is now optional (when provided, open-tag and
   closing-tag identifiers do still need to match) &ndash; it serves no purpose
   in the Jison-grammar.

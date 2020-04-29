@@ -1,4 +1,5 @@
 <p>
-  Dynamic include: Woei [{var test}].</br>
-  Hallo?
+  Include template: Foo &ndash; [{var test}] &ndash; bar...
+  </br>
+  Hello World!
 </p>

@@ -1,25 +1,25 @@
 [
   {
     "t": "html",
-    "d": "<!--\r\n\r\n\tModified TP4 Test\r\n\r\n\tOmits the not-supported translation-markers (%txtSomething%)\r\n\tAdds additional tests to ensure literal []{} are properly processed\r\n\t\t(the above comment is a test in itself already ;)\r\n\tAdds a test for spaces in TP4 includes.\r\n\tSupport for strings inside condition statements (including empty strings; \"\")\r\n\tSupport for !is (instead of \"not\"; for parity with \"!in\")\r\n\tClosing tag name/identifier is now optional (when provided open-tag and closing-\r\n\ttag names do still need to match) - it served no purpose in the grammar\r\n\tRemoved \"local\" flag from var- and if-statements (served no real purpose)\r\n\tRemove \"include component\" (fell out of grace; currently unused)\r\n\tProper handling of whitespaces and comments. The old PHP-based parser would\r\n\teat all the whitespaces and aggressively mangle HTML-comments. The new parser\r\n\tis only concerned with HTML-comments that are part of Template4-tags (and\r\n\tleaves the rest untouched).\r\n-->\r\n\r\n<hr>\r\n\r\n<h1>"
+    "d": "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n  <meta charset=\"UTF-8\">\r\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n  <title>New</title>\r\n</head>\r\n<body>\r\n\r\n\t<h1>"
   },
   { "t": "var", "n": "header1", "a": { "raw": false } },
   {
     "t": "html",
-    "d": "</h1>\r\n\r\n<h2>Replace &amp; Replace Raw</h2>\r\n<p>"
+    "d": "</h1>\r\n\r\n\t<h2>Replace &amp; Replace Raw</h2>\r\n\t<p>"
   },
   { "t": "var", "n": "header2", "a": { "raw": false } },
-  { "t": "html", "d": ".</p>\r\n<p>" },
+  { "t": "html", "d": ".</p>\r\n\t<p>" },
   { "t": "var", "n": "header2", "a": { "raw": true } },
-  { "t": "html", "d": ".</p>\r\n\r\n<h1>Condition Sets</h1>\r\n\r\n" },
+  { "t": "html", "d": ".</p>\r\n\r\n\t<h1>Condition Sets</h1>\r\n\r\n\t" },
   {
     "t": "if",
     "n": "in_set",
     "d": ["1", "2", "3"],
     "o": "is",
-    "c": [{ "t": "html", "d": "\r\n\t<p>In 1, 2 or 3!</p>\r\n" }]
+    "c": [{ "t": "html", "d": "\r\n\t\t<p>In 1, 2 or 3!</p>\r\n\t" }]
   },
-  { "t": "html", "d": "\r\n\r\n" },
+  { "t": "html", "d": "\r\n\r\n\t" },
   {
     "t": "if",
     "n": "in_set",
@@ -28,148 +28,137 @@
     "c": [
       {
         "t": "html",
-        "d": "\r\n\t<p><strong>NOT</strong> in 1, 2 or 3!</p>\r\n"
+        "d": "\r\n\t\t<p><strong>NOT</strong> in 1, 2 or 3!</p>\r\n\t"
       }
     ]
   },
-  { "t": "html", "d": "\r\n\r\n" },
+  { "t": "html", "d": "\r\n\r\n\t" },
   {
     "t": "if",
     "n": "quoted_if",
     "d": "Hello World!",
     "o": "is",
-    "c": [{ "t": "html", "d": "\r\n\t<p>Quoted if-statement</p>\r\n" }]
+    "c": [{ "t": "html", "d": "\r\n\t\t<p>Quoted if-statement</p>\r\n\t" }]
   },
-  { "t": "html", "d": "\r\n\r\n" },
+  { "t": "html", "d": "\r\n\r\n\t" },
   {
     "t": "if",
     "n": "quoted_set",
-    "d": ["Hello World!", "Woei", ""],
+    "d": ["Hello World!", "Foo", ""],
     "o": "is",
     "c": [
       {
         "t": "html",
-        "d": "\r\n\t<p>In \"Hello World!\", \"Woei\" or \"\"</p>\r\n"
+        "d": "\r\n\t\t<p>In \"Hello World!\", \"Foo\" or \"\"</p>\r\n\t"
       }
     ]
   },
-  { "t": "html", "d": "\r\n\r\n" },
+  { "t": "html", "d": "\r\n\r\n\t" },
   {
     "t": "if",
     "n": "in_set2",
     "d": ["foo", "bar"],
     "o": "is",
     "c": [
-      { "t": "html", "d": "\r\n\t<p>Either foo or bar: <strong>" },
+      { "t": "html", "d": "\r\n\t\t<p>Either foo or bar: <strong>" },
       { "t": "var", "n": "in_set2", "a": { "raw": false } },
-      { "t": "html", "d": "</strong></p>\r\n" }
+      { "t": "html", "d": "</strong></p>\r\n\t" }
     ]
   },
   {
     "t": "html",
-    "d": "\r\n\r\n<p>\r\n\tThe following line should end with <strong>"
+    "d": "\r\n\r\n\t<p>\r\n\t\tThe following line should end with <strong>"
   },
   { "t": "var", "n": "random_string", "a": { "raw": false } },
   {
     "t": "html",
-    "d": "</strong>.\r\n\t<br/>\r\n\tHere are some literal [, ], { and } characters; [Hello] {World}!\r\n</p>\r\n\r\n<h1>TemplatedObject: "
-  },
-  { "t": "var", "n": "templated_test", "a": { "raw": false } },
-  { "t": "html", "d": "</h1>\r\n\r\n<p>\r\n\t" },
-  { "t": "var", "n": "templated_test__test1", "a": { "raw": false } },
-  { "t": "html", "d": "\r\n\t<br>\r\n\t" },
-  { "t": "var", "n": "templated_test__test2", "a": { "raw": false } },
-  { "t": "html", "d": "\r\n\t<br>\r\n\t" },
-  {
-    "t": "if",
-    "n": "templated_test__test3_1",
-    "d": "true",
-    "o": "is",
-    "c": [{ "t": "html", "d": "\r\n\t\t<em>is true!</em>\r\n\t" }]
-  },
-  {
-    "t": "html",
-    "d": "\r\n</p>\r\n\r\n<h1>Recursive Repeater</h1>\r\n\r\n<p>The output for the <strong>correct</strong> approach is displayed below. The\r\nincorrect (c.q. wrong) approach is executed on a clone of the template to prevent\r\nit from polluting the template, which would cause problems with further tests.</p>\r\n\r\n"
+    "d": "</strong>.\r\n\t\t<br/>\r\n\t\tHere are some literal [, ], { and } characters; [Hello] {World}!\r\n\t</p>\r\n\r\n\t<h1>Recursive Repeater</h1>\r\n\r\n\t<p>The output for the <strong>correct</strong> approach is displayed below. The\r\n\tincorrect (c.q. wrong) approach is executed on a clone of the template to\r\n\tprevent it from polluting the template, which would cause problems with further\r\n\ttests.</p>\r\n\r\n\t"
   },
   {
     "t": "section",
     "n": "ListWrapper",
     "c": [
-      { "t": "html", "d": "\r\n\r\n\t<ol>\r\n\r\n\t\t" },
+      { "t": "html", "d": "\r\n\r\n\t\t<ol>\r\n\r\n\t\t\t" },
       {
         "t": "loop",
         "n": "MyList",
         "c": [
-          { "t": "html", "d": "\r\n\t\t\t<li>\r\n\t\t\t\tLevel " },
+          { "t": "html", "d": "\r\n\t\t\t\t<li>\r\n\t\t\t\t\tLevel " },
           { "t": "var", "n": "level", "a": { "raw": false } },
           { "t": "html", "d": ", value: " },
           { "t": "var", "n": "value", "a": { "raw": false } },
-          { "t": "html", "d": "\r\n\t\t\t\t<ol>\r\n\t\t\t\t\t" },
+          { "t": "html", "d": "\r\n\t\t\t\t\t<ol>\r\n\t\t\t\t\t\t" },
           { "t": "section", "n": "SubList" },
-          { "t": "html", "d": "\r\n\t\t\t\t</ol>\r\n\t\t\t</li>\r\n\t\t" }
+          { "t": "html", "d": "\r\n\t\t\t\t\t</ol>\r\n\t\t\t\t</li>\r\n\t\t\t" }
         ]
       },
-      { "t": "html", "d": "\r\n\r\n\t</ol>\r\n\r\n" }
+      { "t": "html", "d": "\r\n\r\n\t\t</ol>\r\n\r\n\t" }
     ]
   },
   {
     "t": "html",
-    "d": "\r\n\r\n<h1>Nested Sections &amp; Includes</h1>\r\n\r\n<p>Below, both \"Static Include\" and \"Include Template\" should be present.</p>\r\n\r\n"
+    "d": "\r\n\r\n\t<h1>Nested Sections &amp; Includes</h1>\r\n\r\n\t<p>Below, \"Static include\" and \"Include template\" and \"Include template with\r\n\tspaces\" should be present.</p>\r\n\r\n\t"
   },
   {
     "t": "section",
     "n": "Test",
     "c": [
-      { "t": "html", "d": "\r\n\r\n\t" },
+      { "t": "html", "d": "\r\n\r\n\t\t" },
       {
         "t": "section",
-        "n": "Iets",
+        "n": "Something",
         "c": [
-          { "t": "html", "d": "\r\n\r\n\t\t" },
+          { "t": "html", "d": "\r\n\r\n\t\t\t" },
           {
             "t": "section",
-            "n": "Iets",
+            "n": "Something",
             "c": [
               {
                 "t": "html",
-                "d": "\r\n\r\n\t\t\t<p>\r\n  Static include: <strong>Hello World!</strong>\r\n</p>\r\n\r\n\r\n\t\t"
+                "d": "\r\n\r\n\t\t\t\t<p>\r\n  Static include: <strong>Hello World!</strong>\r\n</p>\r\n\r\n\r\n\t\t\t"
               }
             ]
           },
-          { "t": "html", "d": "\r\n\r\n\t" }
+          { "t": "html", "d": "\r\n\r\n\t\t" }
         ]
       },
-      { "t": "html", "d": "\r\n\r\n\t" },
+      { "t": "html", "d": "\r\n\r\n\t\t" },
       {
         "t": "section",
-        "n": "NogIets",
+        "n": "AnotherThing",
         "c": [
-          { "t": "html", "d": "\r\n\r\n\t\t" },
+          { "t": "html", "d": "\r\n\r\n\t\t\t" },
           {
             "t": "section",
-            "n": "Iets",
+            "n": "Something",
             "c": [
-              { "t": "html", "d": "\r\n\r\n\t\t\t" },
+              { "t": "html", "d": "\r\n\r\n\t\t\t\t" },
               {
                 "t": "if",
                 "n": "test_me",
                 "d": "false",
                 "o": "is",
                 "c": [
-                  { "t": "html", "d": "\r\n\t\t\t\t" },
+                  { "t": "html", "d": "\r\n\t\t\t\t\t" },
                   {
                     "t": "include",
                     "d": [
-                      { "t": "html", "d": "<p>\r\n  Dynamic include: Woei " },
+                      {
+                        "t": "html",
+                        "d": "<p>\r\n  Include template: Foo &ndash; "
+                      },
                       { "t": "var", "n": "test", "a": { "raw": false } },
-                      { "t": "html", "d": ".</br>\r\n  Hallo?\r\n</p>\r\n" }
+                      {
+                        "t": "html",
+                        "d": " &ndash; bar...\r\n  </br>\r\n  Hello World!\r\n</p>\r\n"
+                      }
                     ],
-                    "n": "WoeiTemplate"
+                    "n": "FooTemplate"
                   },
-                  { "t": "html", "d": "\r\n\t\t\t" }
+                  { "t": "html", "d": "\r\n\t\t\t\t" }
                 ]
               },
-              { "t": "html", "d": "\r\n\r\n\t\t\t<p " },
+              { "t": "html", "d": "\r\n\r\n\t\t\t\t<p " },
               {
                 "t": "if",
                 "n": "lipsum_bold",
@@ -179,19 +168,19 @@
               },
               {
                 "t": "html",
-                "d": ">\r\n\t\t\t\tLorem ipsum inside a section...\r\n\t\t\t</p>\r\n\r\n\t\t"
+                "d": ">\r\n\t\t\t\t\tLorem ipsum inside a section...\r\n\t\t\t\t</p>\r\n\r\n\t\t\t"
               }
             ]
           },
-          { "t": "html", "d": "\r\n\r\n\t" }
+          { "t": "html", "d": "\r\n\r\n\t\t" }
         ]
       },
-      { "t": "html", "d": "\r\n\r\n" }
+      { "t": "html", "d": "\r\n\r\n\t" }
     ]
   },
   {
     "t": "html",
-    "d": "\r\n\r\n<p>\r\n  Woei with <strong><em>spaces!!!M</em></strong> [{var test}].</br>\r\n  Hallo?\r\n</p>\r\n\r\n\r\n"
+    "d": "\r\n\r\n\t<p>\r\n  Include template with <strong><em>spaces!!!</em></strong> [{var test}].\r\n  </br>\r\n  Hello World!\r\n</p>\r\n\r\n\r\n\t"
   },
   {
     "t": "if",
@@ -199,7 +188,7 @@
     "d": "",
     "o": "not",
     "c": [
-      { "t": "html", "d": "\r\n\t<p " },
+      { "t": "html", "d": "\r\n\t\t<p " },
       {
         "t": "if",
         "n": "lipsum_bold",
@@ -209,25 +198,25 @@
       },
       {
         "t": "html",
-        "d": ">\r\n\t\tDouble-nested: Lorem ipsum in global scope (should be bold)...\r\n\t</p>\r\n"
+        "d": ">\r\n\t\t\tDouble-nested: Lorem ipsum in global scope (should be bold)...\r\n\t\t</p>\r\n\t"
       }
     ]
   },
   {
     "t": "html",
-    "d": "\r\n\r\n<h1>Repeater &amp; Scope</h1>\r\n\r\n<ul>\r\n\r\n\t"
+    "d": "\r\n\r\n\t<h1>Repeater &amp; Scope</h1>\r\n\r\n\t<ul>\r\n\r\n\t\t"
   },
   {
     "t": "loop",
     "n": "BulletList",
     "c": [
-      { "t": "html", "d": "\r\n\r\n\t\t<li>" },
+      { "t": "html", "d": "\r\n\r\n\t\t\t<li>" },
       { "t": "var", "n": "random_string", "a": { "raw": false } },
-      { "t": "html", "d": " - " },
+      { "t": "html", "d": " &ndash; " },
       { "t": "var", "n": "bullet_item", "a": { "raw": true } },
-      { "t": "html", "d": "</li>\r\n\r\n\t" }
+      { "t": "html", "d": "</li>\r\n\r\n\t\t" }
     ]
   },
-  { "t": "html", "d": "\r\n\r\n</ul>\r\n\r\n<hr>\r\n" }
+  { "t": "html", "d": "\r\n\r\n\t</ul>\r\n\r\n</body>\r\n</html>\r\n" }
 ]
 
