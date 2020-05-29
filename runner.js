@@ -22,6 +22,7 @@ try {
   console.log(`${e.name}: ${e.message}`);
 }
 output = prettier.format(output, { parser: "json", endOfLine: "crlf" });
+output = output.trim().replace(/(?:\\r\\n|\\r|\\n)/g, "\\r\\n");
 
 switch (process.argv[2]) {
   case "output":
@@ -31,7 +32,7 @@ switch (process.argv[2]) {
     break;
 
   case "test":
-    if (output.trim() === reference.trim()) {
+    if (output === reference.trim().replace(/(?:\r\n|\r|\n)/g, "\r\n")) {
       console.log("Okay!");
       process.exit(0);
     } else {

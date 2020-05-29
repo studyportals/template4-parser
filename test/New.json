@@ -4,10 +4,7 @@
     "d": "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n  <meta charset=\"UTF-8\">\r\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n  <title>New</title>\r\n</head>\r\n<body>\r\n\r\n\t<h1>"
   },
   { "t": "var", "n": "header1", "a": { "raw": false } },
-  {
-    "t": "html",
-    "d": "</h1>\r\n\r\n\t<h2>Replace &amp; Replace Raw</h2>\r\n\t<p>"
-  },
+  { "t": "html", "d": "</h1>\r\n\r\n\t<h2>Replace &amp; Replace Raw</h2>\r\n\t<p>" },
   { "t": "var", "n": "header2", "a": { "raw": false } },
   { "t": "html", "d": ".</p>\r\n\t<p>" },
   { "t": "var", "n": "header2", "a": { "raw": true } },
@@ -202,10 +199,7 @@
       }
     ]
   },
-  {
-    "t": "html",
-    "d": "\r\n\r\n\t<h1>Repeater &amp; Scope</h1>\r\n\r\n\t<ul>\r\n\r\n\t\t"
-  },
+  { "t": "html", "d": "\r\n\r\n\t<h1>Repeater &amp; Scope</h1>\r\n\r\n\t<ul>\r\n\r\n\t\t" },
   {
     "t": "loop",
     "n": "BulletList",
@@ -219,4 +213,3 @@
   },
   { "t": "html", "d": "\r\n\r\n\t</ul>\r\n\r\n</body>\r\n</html>\r\n" }
 ]
-
