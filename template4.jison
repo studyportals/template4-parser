@@ -17,6 +17,9 @@
 <tp4>"include"          return 'TP4_INCLUDE'
 <tp4>"in"               return 'TP4_IN'
 <tp4>"is"               return 'TP4_IS'
+<tp4>"="                return 'TP4_EQ'
+<tp4>"<"                return 'TP4_LT'
+<tp4>">"                return 'TP4_GT'
 <tp4>"not"|"!"          return 'TP4_NOT'
 <tp4>"end"              return 'TP4_END'
 <tp4>"template"         return 'TP4_TEMPLATE'
@@ -190,13 +193,19 @@ tp4_string:   TP4_QUOTE TP4_QUOTE             { $$ = undefined }
             | TP4_QUOTE TP4_STRING TP4_QUOTE  { $$ = $TP4_STRING }
 ;
 
-tp4_op:   TP4_IS            { $$ = 'is' }
-        | TP4_NOT           { $$ = 'not' }
-        | TP4_NOT TP4_IS    { $$ = 'not' }
+tp4_op:   TP4_IS            { $$ = '==' }
+        | TP4_EQ TP4_EQ?    { $$ = '==' }
+        | TP4_NOT           { $$ = '!=' }
+        | TP4_NOT TP4_IS    { $$ = '!=' }
+        | TP4_NOT TP4_EQ    { $$ = '!=' }
+        | TP4_LT            { $$ =  '<' }
+        | TP4_LT TP4_EQ     { $$ = '<=' }
+        | TP4_GT            { $$ =  '>' }
+        | TP4_GT TP4_EQQ    { $$ = '>=' }
 ;
 
-tp4_setop:  TP4_IN          { $$ = 'is' }
-          | TP4_NOT TP4_IN  { $$ = 'not' }
+tp4_setop:  TP4_IN          { $$ =  'in' }
+          | TP4_NOT TP4_IN  { $$ = '!in' }
 ;
 
 tp4_as_name:  // Empty
