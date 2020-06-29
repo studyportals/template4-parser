@@ -37,39 +37,38 @@ npm run test
 ```
 
 The `test`- and `output`-scripts are currently hardcoded to using `test/New.tp4`
-(and the accompanying `test/New.json` reference output).
+(and the accompanying `test/New.json` reference output). The test-suite used is
+nearly identical to the one provided as a smoke-test for the PHP-based
+[Template4](https://github.com/studyportals/Template4) implementation.
 
 ## Differences with PHP-based implementation
 
 The Jison-based parser is fully backwards-compatible with the Template4-syntax
 used by the PHP-based [Template4](https://github.com/studyportals/Template4)
-implementation.
+implementation, with _one_ significant exception:
 
-There are various enhancements though:
+- Several comparision operator aliasses supported by the PHP-based
+  implementation (`greater`, `gt` & `gte` &ndash; `smaller`, `lt` & `lte`
+  &ndash; `<>`) have been left out of the Jison-grammar. These aliasses will be
+  removed from the PHP-based implementation at its next major revision.
 
-- Support for quoted strings inside `condition`-statements.
-  - Includes support for empty strings (e.g. `""`) &ndash; in the PHP-based
-    implementation this is only possible by using `false` instead of an empty
-    string.
-  - Furthermore, this allows spaces to be used in condition arguments (e.g.
-    `"Hello World!"`).
-  - Support also extends to set-operations (`in`; `!in`) &ndash; allowing for
-    sets like `"Option 1 ", "Option 2"`.
-- Support for quoted strings inside `include`-statements &ndash; this makes it
-  possible to include files with spaces in their names.
-- Support for `!is` (together with `not`) &ndash; for parity with `!in`.
+There are also several (non-backwards compatible) enhancements:
+
+- Support for empty quoted strings inside `condition`-statements (e.g. `""`)
+  &ndash; in the PHP-based implementation this is only possible by using `false`
+  instead of an empty string.
 - The closing tag identifier is now optional (when provided, open-tag and
   closing-tag identifiers do still need to match) &ndash; it serves no purpose
   in the Jison-grammar.
-- Proper handling of whitespaces and comments. The old PHP-based parser would
-  eat all whitespaces and aggressively mangle HTML-comments. The new parser is
-  only concerned with HTML-comments that are part of Template4-tags
-  (`<!--[{..}]-->` and leaves other comments and whitespace untouched).
+- Proper handling of whitespaces and HTML-comments. The old PHP-based parser
+  would eat all whitespaces and aggressively mangle HTML-comments. The new
+  parser is only concerned with HTML-comments that are part of Template4-tags
+  (`<!--[{..}]-->`) and leaves other comments and whitespace untouched.
 
 📋 **TODO**: A second Jison-file (e.g. `template4-compat.jison`) should be
-provided that does _not_ allow any of the above enhancements. This should be
-used when using the Jison-based parser to validate templates fed into the
-PHP-based parser.
+provided that does _not_ allow any of the above enhancements (and perhaps
+includes the missing operator aliasses). This should be used when using the
+Jison-based parser to validate templates fed into the PHP-based parser.
 
 ## Caveats
 
