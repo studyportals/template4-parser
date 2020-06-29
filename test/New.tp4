@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New</title>
+  <title>Template4 Test</title>
 </head>
 <body>
 
@@ -42,11 +42,6 @@
 	</p>
 
 	<h1>Recursive Repeater</h1>
-
-	<p>The output for the <strong>correct</strong> approach is displayed below. The
-	incorrect (c.q. wrong) approach is executed on a clone of the template to
-	prevent it from polluting the template, which would cause problems with further
-	tests.</p>
 
 	[{section ListWrapper}]
 
@@ -98,9 +93,9 @@
 
 		[{section end}]
 
-	[{section Test end}]
+		[{include template "Include with Spaces.tp4"}]
 
-	[{include "Include with Spaces.tp4"}]
+	[{section Test end}]
 
 	[{if lipsum_bold !is ""}]
 		<p [{if lipsum_bold is true}]style="font-weight:bold;"[{if end}]>

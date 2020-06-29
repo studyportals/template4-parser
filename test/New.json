@@ -1,7 +1,7 @@
 [
   {
     "t": "html",
-    "d": "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n  <meta charset=\"UTF-8\">\r\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n  <title>New</title>\r\n</head>\r\n<body>\r\n\r\n\t<h1>"
+    "d": "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n  <meta charset=\"UTF-8\">\r\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n  <title>Template4 Test</title>\r\n</head>\r\n<body>\r\n\r\n\t<h1>"
   },
   { "t": "var", "n": "header1", "a": { "raw": false } },
   { "t": "html", "d": "</h1>\r\n\r\n\t<h2>Replace &amp; Replace Raw</h2>\r\n\t<p>" },
@@ -13,7 +13,7 @@
     "t": "if",
     "n": "in_set",
     "d": ["1", "2", "3"],
-    "o": "is",
+    "o": "in",
     "c": [{ "t": "html", "d": "\r\n\t\t<p>In 1, 2 or 3!</p>\r\n\t" }]
   },
   { "t": "html", "d": "\r\n\r\n\t" },
@@ -21,7 +21,7 @@
     "t": "if",
     "n": "in_set",
     "d": ["1", "2", "3"],
-    "o": "not",
+    "o": "!in",
     "c": [
       {
         "t": "html",
@@ -34,7 +34,7 @@
     "t": "if",
     "n": "quoted_if",
     "d": "Hello World!",
-    "o": "is",
+    "o": "==",
     "c": [{ "t": "html", "d": "\r\n\t\t<p>Quoted if-statement</p>\r\n\t" }]
   },
   { "t": "html", "d": "\r\n\r\n\t" },
@@ -42,7 +42,7 @@
     "t": "if",
     "n": "quoted_set",
     "d": ["Hello World!", "Foo", ""],
-    "o": "is",
+    "o": "in",
     "c": [
       {
         "t": "html",
@@ -55,7 +55,7 @@
     "t": "if",
     "n": "in_set2",
     "d": ["foo", "bar"],
-    "o": "is",
+    "o": "in",
     "c": [
       { "t": "html", "d": "\r\n\t\t<p>Either foo or bar: <strong>" },
       { "t": "var", "n": "in_set2", "a": { "raw": false } },
@@ -69,7 +69,7 @@
   { "t": "var", "n": "random_string", "a": { "raw": false } },
   {
     "t": "html",
-    "d": "</strong>.\r\n\t\t<br/>\r\n\t\tHere are some literal [, ], { and } characters; [Hello] {World}!\r\n\t</p>\r\n\r\n\t<h1>Recursive Repeater</h1>\r\n\r\n\t<p>The output for the <strong>correct</strong> approach is displayed below. The\r\n\tincorrect (c.q. wrong) approach is executed on a clone of the template to\r\n\tprevent it from polluting the template, which would cause problems with further\r\n\ttests.</p>\r\n\r\n\t"
+    "d": "</strong>.\r\n\t\t<br/>\r\n\t\tHere are some literal [, ], { and } characters; [Hello] {World}!\r\n\t</p>\r\n\r\n\t<h1>Recursive Repeater</h1>\r\n\r\n\t"
   },
   {
     "t": "section",
@@ -134,7 +134,7 @@
                 "t": "if",
                 "n": "test_me",
                 "d": "false",
-                "o": "is",
+                "o": "==",
                 "c": [
                   { "t": "html", "d": "\r\n\t\t\t\t\t" },
                   {
@@ -160,7 +160,7 @@
                 "t": "if",
                 "n": "lipsum_bold",
                 "d": "true",
-                "o": "is",
+                "o": "==",
                 "c": [{ "t": "html", "d": "style=\"font-weight:bold;\"" }]
               },
               {
@@ -172,25 +172,34 @@
           { "t": "html", "d": "\r\n\r\n\t\t" }
         ]
       },
+      { "t": "html", "d": "\r\n\r\n\t\t" },
+      {
+        "t": "include",
+        "d": [
+          {
+            "t": "html",
+            "d": "<p>\r\n  Include template with <strong><em>spaces!!!</em></strong> "
+          },
+          { "t": "var", "n": "test", "a": { "raw": false } },
+          { "t": "html", "d": ".\r\n  </br>\r\n  Hello World!\r\n</p>\r\n" }
+        ]
+      },
       { "t": "html", "d": "\r\n\r\n\t" }
     ]
   },
-  {
-    "t": "html",
-    "d": "\r\n\r\n\t<p>\r\n  Include template with <strong><em>spaces!!!</em></strong> [{var test}].\r\n  </br>\r\n  Hello World!\r\n</p>\r\n\r\n\r\n\t"
-  },
+  { "t": "html", "d": "\r\n\r\n\t" },
   {
     "t": "if",
     "n": "lipsum_bold",
     "d": "",
-    "o": "not",
+    "o": "!=",
     "c": [
       { "t": "html", "d": "\r\n\t\t<p " },
       {
         "t": "if",
         "n": "lipsum_bold",
         "d": "true",
-        "o": "is",
+        "o": "==",
         "c": [{ "t": "html", "d": "style=\"font-weight:bold;\"" }]
       },
       {
